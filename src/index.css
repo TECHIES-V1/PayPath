@@ -1,0 +1,54 @@
+:root {
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  background-color: #040b1a;
+  color: #f3f6ff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at top, rgba(66, 185, 255, 0.25), transparent 58%), #030712;
+}
+
+main {
+  text-align: center;
+  padding: 4rem 2rem;
+  position: relative;
+}
+
+h1 {
+  font-size: clamp(3rem, 5vw, 4rem);
+  margin: 0;
+}
+
+p {
+  margin-top: 1rem;
+  color: #b8c4ff;
+}
+
+.ring {
+  position: absolute;
+  inset: -2px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: pulse 5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(0.95);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+}

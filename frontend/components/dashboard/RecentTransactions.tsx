@@ -49,6 +49,7 @@ function formatDate(dateStr: string) {
 
 export default function RecentTransactions() {
   const transactions = useTransactionStore((s) => s.transactions).slice(0, 5);
+  const isLoading = useTransactionStore((s) => s.isLoading);
 
   return (
     <Card className="h-full">
@@ -64,7 +65,18 @@ export default function RecentTransactions() {
         </CardAction>
       </CardHeader>
       <CardContent className="space-y-1">
-        {transactions.length === 0 ? (
+        {isLoading ? (
+          [...Array(4)].map((_, i) => (
+            <div key={i} className="flex items-center gap-3 py-2.5">
+              <div className="size-10 rounded-xl skeleton" />
+              <div className="flex-1 space-y-2">
+                <div className="h-3.5 w-20 rounded skeleton" />
+                <div className="h-3 w-14 rounded skeleton" />
+              </div>
+              <div className="h-4 w-16 rounded skeleton" />
+            </div>
+          ))
+        ) : transactions.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-6">No transactions yet</p>
         ) : (
           transactions.map((tx) => {

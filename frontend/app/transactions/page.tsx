@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import AppShell from "@/components/layout/AppShell";
 import Header from "@/components/layout/Header";
@@ -55,13 +55,21 @@ function formatDate(dateStr: string) {
 }
 
 export default function TransactionsPage() {
-  const { filter, setFilter, getFiltered, deleteTransaction } = useTransactionStore();
+  const { filter, setFilter, getFiltered, deleteTransaction, fetchTransactions, isLoading } = useTransactionStore();
   const transactions = getFiltered();
   const [addOpen, setAddOpen] = useState(false);
 
-  const handleDelete = (tx: Transaction) => {
-    deleteTransaction(tx.id);
-    toast.success("Transaction deleted");
+  useEffect(() => {
+    fetchTransactions();
+  }, [fetchTransactions]);
+
+  const handleDelete = async (tx: Transaction) => {
+    try {
+      await deleteTransaction(tx.id);
+      toast.success("Transaction deleted");
+    } catch {
+      toast.error("Failed to delete transaction");
+    }
   };
 
   const filters = ["all", "income", "expense"] as const;
@@ -93,8 +101,21 @@ export default function TransactionsPage() {
           </div>
         </div>
 
-        {/* Transaction list or empty state */}
-        {transactions.length === 0 ? (
+        {/* Loading / Transaction list / Empty state */}
+        {isLoading ? (
+          <div className="space-y-3 py-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex items-center gap-3 py-2.5">
+                <div className="size-10 rounded-xl skeleton" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-3.5 w-24 rounded skeleton" />
+                  <div className="h-3 w-16 rounded skeleton" />
+                </div>
+                <div className="h-4 w-20 rounded skeleton" />
+              </div>
+            ))}
+          </div>
+        ) : transactions.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { getToken } from "@/lib/api";
@@ -9,6 +9,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { isAuthenticated, isLoading, fetchUser } = useAuthStore();
   const [checking, setChecking] = useState(true);
+  const didFetch = useRef(false);
 
   useEffect(() => {
     const token = getToken();
@@ -16,12 +17,14 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       router.replace("/login");
       return;
     }
-    if (!isAuthenticated) {
+    if (!isAuthenticated && !didFetch.current) {
+      didFetch.current = true;
       fetchUser().finally(() => setChecking(false));
-    } else {
+    } else if (isAuthenticated) {
       setChecking(false);
     }
-  }, [isAuthenticated, fetchUser, router]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
   if (checking || isLoading) {
     return (

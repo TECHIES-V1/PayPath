@@ -19,6 +19,7 @@ function formatCurrency(amount: number) {
 
 export default function GoalsSummary() {
   const goals = useGoalStore((s) => s.goals).slice(0, 2);
+  const isLoading = useGoalStore((s) => s.isLoading);
   const [addOpen, setAddOpen] = useState(false);
 
   return (
@@ -36,7 +37,18 @@ export default function GoalsSummary() {
           </CardAction>
         </CardHeader>
         <CardContent className="space-y-3">
-          {goals.length === 0 ? (
+          {isLoading ? (
+            [...Array(2)].map((_, i) => (
+              <div key={i} className="bg-muted/30 dark:bg-white/[0.04] rounded-xl p-3.5 space-y-2.5">
+                <div className="flex items-center gap-2.5">
+                  <div className="size-8 rounded-lg skeleton" />
+                  <div className="flex-1 h-3.5 w-24 rounded skeleton" />
+                </div>
+                <div className="h-2.5 rounded-full skeleton" />
+                <div className="h-3 w-32 rounded skeleton" />
+              </div>
+            ))
+          ) : goals.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">No goals yet</p>
           ) : (
             goals.map((goal) => {

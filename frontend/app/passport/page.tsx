@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import AppShell from "@/components/layout/AppShell";
 import Header from "@/components/layout/Header";
@@ -9,26 +10,71 @@ import {
   LockIcon,
   Award01Icon,
   Target01Icon,
-  AiChat01Icon,
   CreditCardIcon,
   DollarCircleIcon,
+  CheckmarkCircle01Icon,
 } from "@hugeicons/core-free-icons";
+import { apiGet } from "@/lib/api";
 
-const badges = [
+interface PassportData {
+  score: number;
+  tier: string;
+  badges: string[];
+  savingsStreak: number;
+  budgetAdherence: number;
+  incomeConsistency: number;
+}
+
+interface BreakdownFactor {
+  name: string;
+  weight: number;
+  value: number;
+  description: string;
+}
+
+const badgeConfig = [
   { name: "Saver", icon: DollarCircleIcon },
   { name: "Budgeter", icon: CreditCardIcon },
   { name: "Investor", icon: Award01Icon },
 ];
 
-const checklist = [
-  { label: "Set a savings goal", done: false },
-  { label: "Log 10 transactions", done: false },
-  { label: "Chat with AI Coach", done: false },
-  { label: "Maintain a budget for 30 days", done: false },
-  { label: "Reach your first goal", done: false },
-];
-
 export default function PassportPage() {
+  const [passport, setPassport] = useState<PassportData | null>(null);
+  const [factors, setFactors] = useState<BreakdownFactor[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const [passportRes, breakdownRes] = await Promise.all([
+          apiGet<{ passport: PassportData }>("/passport"),
+          apiGet<{ breakdown: { factors: BreakdownFactor[] } }>("/passport/breakdown"),
+        ]);
+        setPassport(passportRes.passport);
+        setFactors(breakdownRes.breakdown.factors);
+      } catch {
+        // fail silently, show default state
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const score = passport?.score ?? 0;
+  const tier = passport?.tier ?? "Starter";
+  const earnedBadges = passport?.badges ?? [];
+  const circumference = 2 * Math.PI * 78;
+  const dashOffset = circumference * (1 - score / 100);
+
+  const checklist = [
+    { label: "Set a savings goal", done: earnedBadges.length > 0 || score > 0 },
+    { label: "Log 10 transactions", done: earnedBadges.includes("Logger") },
+    { label: "Chat with AI Coach", done: score > 20 },
+    { label: "Maintain a budget for 30 days", done: earnedBadges.includes("Streak Master") },
+    { label: "Reach your first goal", done: earnedBadges.includes("Trusted") },
+  ];
+
   return (
     <AppShell>
       <Header title="Financial Passport" />
@@ -58,19 +104,62 @@ export default function PassportPage() {
                 className="stroke-primary"
                 strokeWidth="10"
                 strokeLinecap="round"
-                strokeDasharray={2 * Math.PI * 78}
-                initial={{ strokeDashoffset: 2 * Math.PI * 78 }}
-                animate={{ strokeDashoffset: 2 * Math.PI * 78 * 0.85 }}
+                strokeDasharray={circumference}
+                initial={{ strokeDashoffset: circumference }}
+                animate={{ strokeDashoffset: isLoading ? circumference : dashOffset }}
                 transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 }}
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-4xl font-display font-bold">---</span>
+              <span className="text-4xl font-display font-bold">
+                {isLoading ? "..." : score}
+              </span>
               <span className="text-xs text-muted-foreground mt-1">Health Score</span>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground mt-4">Complete tasks to unlock your score</p>
+          <div className="mt-4 text-center">
+            <span className="inline-block text-xs font-semibold text-primary bg-primary/10 rounded-full px-3 py-1">
+              {tier}
+            </span>
+            {!isLoading && score === 0 && (
+              <p className="text-sm text-muted-foreground mt-2">Log transactions to build your score</p>
+            )}
+          </div>
         </motion.div>
+
+        {/* Score breakdown */}
+        {factors.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.15 }}
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle>Score Breakdown</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {factors.map((f) => (
+                  <div key={f.name} className="space-y-1.5">
+                    <div className="flex justify-between text-sm">
+                      <span className="font-medium">{f.name} <span className="text-muted-foreground text-xs">({f.weight}%)</span></span>
+                      <span className="font-display font-bold text-primary">{f.value}%</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-muted overflow-hidden">
+                      <motion.div
+                        className="h-full rounded-full bg-primary"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${f.value}%` }}
+                        transition={{ duration: 0.8, delay: 0.5 }}
+                      />
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">{f.description}</p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
         {/* Badge slots */}
         <motion.div
@@ -79,17 +168,31 @@ export default function PassportPage() {
           transition={{ duration: 0.4, delay: 0.2 }}
           className="flex justify-center gap-6"
         >
-          {badges.map((badge) => (
-            <div key={badge.name} className="flex flex-col items-center gap-2">
-              <div className="size-16 rounded-2xl bg-muted/50 dark:bg-white/[0.04] flex items-center justify-center relative">
-                <HugeiconsIcon icon={badge.icon} className="size-7 text-muted-foreground/40" />
-                <div className="absolute -bottom-1 -right-1 size-5 rounded-full bg-muted dark:bg-white/[0.08] flex items-center justify-center">
-                  <HugeiconsIcon icon={LockIcon} className="size-2.5 text-muted-foreground/50" />
+          {badgeConfig.map((badge) => {
+            const isEarned = earnedBadges.includes(badge.name);
+            return (
+              <div key={badge.name} className="flex flex-col items-center gap-2">
+                <div className={`size-16 rounded-2xl flex items-center justify-center relative ${
+                  isEarned
+                    ? "bg-primary/15"
+                    : "bg-muted/50 dark:bg-white/[0.04]"
+                }`}>
+                  <HugeiconsIcon
+                    icon={badge.icon}
+                    className={`size-7 ${isEarned ? "text-primary" : "text-muted-foreground/40"}`}
+                  />
+                  {!isEarned && (
+                    <div className="absolute -bottom-1 -right-1 size-5 rounded-full bg-muted dark:bg-white/[0.08] flex items-center justify-center">
+                      <HugeiconsIcon icon={LockIcon} className="size-2.5 text-muted-foreground/50" />
+                    </div>
+                  )}
                 </div>
+                <span className={`text-xs font-medium ${isEarned ? "text-primary" : "text-muted-foreground"}`}>
+                  {badge.name}
+                </span>
               </div>
-              <span className="text-xs text-muted-foreground font-medium">{badge.name}</span>
-            </div>
-          ))}
+            );
+          })}
         </motion.div>
 
         {/* Checklist */}
@@ -114,11 +217,15 @@ export default function PassportPage() {
                   transition={{ duration: 0.3, delay: 0.5 + i * 0.06 }}
                   className="flex items-center gap-3 py-2.5 px-2 -mx-2 rounded-xl hover:bg-muted/30 transition-colors"
                 >
-                  <div className={`size-5 rounded-full border-2 shrink-0 ${
+                  <div className={`size-5 rounded-full border-2 shrink-0 flex items-center justify-center ${
                     item.done
                       ? "bg-primary border-primary"
                       : "border-muted-foreground/30"
-                  }`} />
+                  }`}>
+                    {item.done && (
+                      <HugeiconsIcon icon={CheckmarkCircle01Icon} className="size-3 text-primary-foreground" />
+                    )}
+                  </div>
                   <span className={`text-sm ${item.done ? "line-through text-muted-foreground" : ""}`}>
                     {item.label}
                   </span>

@@ -47,7 +47,7 @@ export default function BalanceCard() {
   const [visible, setVisible] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
   const [addType, setAddType] = useState<"income" | "expense">("income");
-  const { getTotals } = useTransactionStore();
+  const { getTotals, isLoading } = useTransactionStore();
   const { balance, income, expense } = getTotals();
   const animatedBalance = useCountUp(balance);
 
@@ -83,7 +83,9 @@ export default function BalanceCard() {
 
           {/* Balance */}
           <h2 className="text-4xl md:text-5xl font-display font-bold tracking-tight mb-8">
-            {visible ? formatCurrency(animatedBalance) : "****"}
+            {isLoading ? (
+              <span className="inline-block h-10 w-48 rounded-xl skeleton bg-white/[0.06]" />
+            ) : visible ? formatCurrency(animatedBalance) : "****"}
           </h2>
 
           {/* Income / Expense pills */}

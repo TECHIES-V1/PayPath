@@ -32,7 +32,9 @@ export default function AddGoalDialog({ open, onOpenChange }: AddGoalDialogProps
     setDeadline("");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!name.trim()) {
@@ -49,15 +51,21 @@ export default function AddGoalDialog({ open, onOpenChange }: AddGoalDialogProps
       return;
     }
 
-    addGoal({
-      name: name.trim(),
-      targetAmount: numTarget,
-      deadline,
-    });
-
-    toast.success("Goal created!");
-    resetForm();
-    onOpenChange(false);
+    setSubmitting(true);
+    try {
+      await addGoal({
+        name: name.trim(),
+        targetAmount: numTarget,
+        deadline,
+      });
+      toast.success("Goal created!");
+      resetForm();
+      onOpenChange(false);
+    } catch {
+      toast.error("Failed to create goal");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -117,7 +125,9 @@ export default function AddGoalDialog({ open, onOpenChange }: AddGoalDialogProps
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit">Create Goal</Button>
+            <Button type="submit" disabled={submitting}>
+              {submitting ? "Creating..." : "Create Goal"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

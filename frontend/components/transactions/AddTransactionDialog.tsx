@@ -44,7 +44,9 @@ export default function AddTransactionDialog({
     setType(defaultType);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const numAmount = parseFloat(amount);
@@ -57,17 +59,23 @@ export default function AddTransactionDialog({
       return;
     }
 
-    addTransaction({
-      type,
-      amount: numAmount,
-      category,
-      date: new Date().toISOString().split("T")[0],
-      note: note.trim() || undefined,
-    });
-
-    toast.success(`${type === "income" ? "Income" : "Expense"} added`);
-    resetForm();
-    onOpenChange(false);
+    setSubmitting(true);
+    try {
+      await addTransaction({
+        type,
+        amount: numAmount,
+        category,
+        date: new Date().toISOString().split("T")[0],
+        note: note.trim() || undefined,
+      });
+      toast.success(`${type === "income" ? "Income" : "Expense"} added`);
+      resetForm();
+      onOpenChange(false);
+    } catch {
+      toast.error("Failed to add transaction");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -160,8 +168,8 @@ export default function AddTransactionDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit">
-              Add {type === "income" ? "Income" : "Expense"}
+            <Button type="submit" disabled={submitting}>
+              {submitting ? "Adding..." : `Add ${type === "income" ? "Income" : "Expense"}`}
             </Button>
           </DialogFooter>
         </form>

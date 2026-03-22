@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { toast } from "sonner";
 import AppShell from "@/components/layout/AppShell";
@@ -33,18 +33,30 @@ function daysUntil(dateStr: string) {
 }
 
 export default function GoalsPage() {
-  const { goals, addFunds, deleteGoal } = useGoalStore();
+  const { goals, addFunds, deleteGoal, fetchGoals, isLoading } = useGoalStore();
   const [addOpen, setAddOpen] = useState(false);
 
-  const handleAddFunds = (goal: Goal) => {
-    const amount = Math.round(goal.targetAmount * 0.1); // 10% increment
-    addFunds(goal.id, amount);
-    toast.success(`Added ${formatCurrency(amount)} to ${goal.name}`);
+  useEffect(() => {
+    fetchGoals();
+  }, [fetchGoals]);
+
+  const handleAddFunds = async (goal: Goal) => {
+    const amount = Math.round(goal.targetAmount * 0.1);
+    try {
+      await addFunds(goal.id, amount);
+      toast.success(`Added ${formatCurrency(amount)} to ${goal.name}`);
+    } catch {
+      toast.error("Failed to add funds");
+    }
   };
 
-  const handleDelete = (goal: Goal) => {
-    deleteGoal(goal.id);
-    toast.success("Goal deleted");
+  const handleDelete = async (goal: Goal) => {
+    try {
+      await deleteGoal(goal.id);
+      toast.success("Goal deleted");
+    } catch {
+      toast.error("Failed to delete goal");
+    }
   };
 
   return (
@@ -63,7 +75,23 @@ export default function GoalsPage() {
           </Button>
         </div>
 
-        {goals.length === 0 ? (
+        {isLoading ? (
+          <div className="space-y-3 py-4">
+            {[...Array(2)].map((_, i) => (
+              <div key={i} className="rounded-2xl bg-card p-5 space-y-3 shadow-card dark:shadow-none dark:border dark:border-white/[0.06]">
+                <div className="flex items-center gap-3">
+                  <div className="size-10 rounded-xl skeleton" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3.5 w-32 rounded skeleton" />
+                    <div className="h-3 w-20 rounded skeleton" />
+                  </div>
+                </div>
+                <div className="h-3 rounded-full skeleton" />
+                <div className="h-3 w-40 rounded skeleton" />
+              </div>
+            ))}
+          </div>
+        ) : goals.length === 0 ? (
           /* Empty state */
           <motion.div
             initial={{ opacity: 0, y: 20 }}

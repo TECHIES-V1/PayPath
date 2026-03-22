@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { motion } from "motion/react";
 import AppShell from "@/components/layout/AppShell";
 import Header from "@/components/layout/Header";
@@ -8,6 +9,8 @@ import AITipCard from "@/components/dashboard/AITipCard";
 import RecentTransactions from "@/components/dashboard/RecentTransactions";
 import GoalsSummary from "@/components/dashboard/GoalsSummary";
 import { useAuthStore } from "@/store/authStore";
+import { useTransactionStore } from "@/store/transactionStore";
+import { useGoalStore } from "@/store/goalStore";
 
 const stagger = {
   hidden: { opacity: 0 },
@@ -24,6 +27,13 @@ const fadeUp = {
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
+  const { fetchTransactions } = useTransactionStore();
+  const { fetchGoals } = useGoalStore();
+
+  useEffect(() => {
+    fetchTransactions();
+    fetchGoals();
+  }, [fetchTransactions, fetchGoals]);
 
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "long",

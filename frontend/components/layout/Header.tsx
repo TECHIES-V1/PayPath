@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useAuthStore } from "@/store/authStore";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Notification01Icon } from "@hugeicons/core-free-icons";
@@ -25,9 +26,9 @@ export default function Header({ title }: HeaderProps) {
             <HugeiconsIcon icon={Notification01Icon} className="size-[18px] text-muted-foreground" />
             <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-destructive animate-pulse-dot" />
           </button>
-          <div className="size-9 rounded-xl bg-primary/15 ring-2 ring-primary/20 flex items-center justify-center text-primary text-xs font-bold">
+          <Link href="/settings" className="size-9 rounded-xl bg-primary/15 ring-2 ring-primary/20 flex items-center justify-center text-primary text-xs font-bold hover:ring-primary/40 transition-all">
             {user?.name?.charAt(0)?.toUpperCase() || "U"}
-          </div>
+          </Link>
         </div>
       </div>
     </header>

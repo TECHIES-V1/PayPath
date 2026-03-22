@@ -17,6 +17,7 @@ interface AuthState {
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   fetchUser: () => Promise<void>;
+  updateUser: (data: Partial<Pick<User, "name" | "email">>) => void;
   clearError: () => void;
 }
 
@@ -78,6 +79,12 @@ export const useAuthStore = create<AuthState>((set) => ({
       setToken(null);
       set({ user: null, isAuthenticated: false, isLoading: false });
     }
+  },
+
+  updateUser: (data) => {
+    set((state) => ({
+      user: state.user ? { ...state.user, ...data } : null,
+    }));
   },
 
   clearError: () => set({ error: null }),

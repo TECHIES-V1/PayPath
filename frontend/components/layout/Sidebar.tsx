@@ -12,6 +12,7 @@ import {
   AiChat01Icon,
   ChartIcon,
   Logout03Icon,
+  Settings01Icon,
 } from "@hugeicons/core-free-icons";
 
 const navItems = [
@@ -66,6 +67,22 @@ export default function Sidebar() {
             );
           })}
         </nav>
+
+        {/* Settings link */}
+        <div className="px-3 pb-2">
+          <Link
+            href="/settings"
+            className={cn(
+              "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+              pathname === "/settings"
+                ? "bg-primary/10 text-primary border-l-[3px] border-primary font-semibold"
+                : "text-sidebar-foreground/60 hover:bg-muted/50 hover:text-sidebar-foreground"
+            )}
+          >
+            <HugeiconsIcon icon={Settings01Icon} className="size-5" />
+            Settings
+          </Link>
+        </div>
 
         {/* User section */}
         <div className="p-4 border-t border-sidebar-border space-y-3">

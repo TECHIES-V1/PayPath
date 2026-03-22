@@ -3,18 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion } from "motion/react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Mail01Icon, LockPasswordIcon } from "@hugeicons/core-free-icons";
 import { useAuthStore } from "@/store/authStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -33,62 +28,88 @@ export default function LoginForm() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xl">Welcome back</CardTitle>
-        <CardDescription>Sign in to your PayPath account</CardDescription>
-      </CardHeader>
-      <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, delay: 0.15 }}
+    >
+      <div className="bg-card rounded-3xl p-8 shadow-card dark:shadow-none dark:border dark:border-white/[0.06]">
+        <div className="space-y-2 mb-8">
+          <h2 className="text-2xl font-display font-bold">Welcome back</h2>
+          <p className="text-sm text-muted-foreground">Sign in to your PayPath account</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
           {error && (
-            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              className="rounded-xl bg-destructive/10 p-3.5 text-sm text-destructive"
+            >
               {error}
               <button
                 type="button"
                 onClick={clearError}
-                className="ml-2 font-medium underline"
+                className="ml-2 font-semibold underline underline-offset-2"
               >
                 Dismiss
               </button>
-            </div>
+            </motion.div>
           )}
+
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-            />
+            <div className="relative">
+              <HugeiconsIcon icon={Mail01Icon} className="absolute left-3.5 top-1/2 -translate-y-1/2 size-[18px] text-muted-foreground" />
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+                className="pl-11"
+              />
+            </div>
           </div>
+
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              autoComplete="current-password"
-            />
+            <div className="relative">
+              <HugeiconsIcon icon={LockPasswordIcon} className="absolute left-3.5 top-1/2 -translate-y-1/2 size-[18px] text-muted-foreground" />
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+                className="pl-11"
+              />
+            </div>
           </div>
-        </CardContent>
-        <CardFooter className="flex flex-col gap-4">
-          <Button type="submit" className="w-full" disabled={isLoading}>
+
+          <Button type="submit" size="lg" className="w-full rounded-xl" disabled={isLoading}>
             {isLoading ? "Signing in..." : "Sign in"}
           </Button>
-          <p className="text-sm text-muted-foreground">
+
+          <div className="relative flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border" />
+            </div>
+            <span className="relative bg-card px-3 text-xs text-muted-foreground">or</span>
+          </div>
+
+          <p className="text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{" "}
-            <Link href="/register" className="font-medium text-primary hover:underline">
+            <Link href="/register" className="font-semibold text-primary hover:underline underline-offset-2">
               Sign up
             </Link>
           </p>
-        </CardFooter>
-      </form>
-    </Card>
+        </form>
+      </div>
+    </motion.div>
   );
 }

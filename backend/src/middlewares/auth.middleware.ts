@@ -1,19 +1,27 @@
 import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 
-export const protect = (req: Request, res: Response, next: NextFunction) => {
-    try { 
-        const token = req.headers.authorization?.split(' ')[1]
+export interface AuthRequest extends Request {
+  user?: { id: string }
+}
 
-        if (!token) {
-            return res.status(400).json({ message: 'Not authorized' })
-        }
+export const protect = (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1]
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET as string)
-        ;(req as any).user = decoded
-
-        next()
-    } catch (error) { 
-      res.status(401).json({ message: 'Token invalid or expired' }) 
+    if (!token) {
+      return res.status(401).json({ message: 'Not authorized — no token provided' })
     }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string }
+
+    if (!decoded || !decoded.id) {
+      return res.status(401).json({ message: 'Token invalid' })
+    }
+
+    req.user = { id: decoded.id }
+    next()
+  } catch (error) {
+    res.status(401).json({ message: 'Token invalid or expired' })
+  }
 }

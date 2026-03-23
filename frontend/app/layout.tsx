@@ -4,7 +4,6 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/auth/ThemeProvider";
-import { Toaster } from "sonner";
 
 const clashDisplay = localFont({
   src: [
@@ -33,21 +32,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn(clashDisplay.variable, comfortaa.variable, "dark")} suppressHydrationWarning>
+    <html lang="en" className={cn(clashDisplay.variable, comfortaa.variable)} suppressHydrationWarning>
       <body className="antialiased">
         <ThemeProvider />
         {children}
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            className: "font-body",
-            style: {
-              borderRadius: "1rem",
-            },
-          }}
-          theme="system"
-          richColors
-        />
       </body>
     </html>
   );

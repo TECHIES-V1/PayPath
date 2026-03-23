@@ -18,7 +18,7 @@ export default function Home() {
   }, [router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[oklch(0.13_0.005_0)] relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
       {/* Antigravity particle background */}
       <div className="absolute inset-0 z-0">
         <Antigravity
@@ -59,7 +59,7 @@ export default function Home() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.25 }}
-          className="text-3xl font-display font-bold text-white"
+          className="text-3xl font-display font-bold text-foreground"
         >
           PayPath
         </motion.h1>

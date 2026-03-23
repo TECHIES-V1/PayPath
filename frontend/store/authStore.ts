@@ -21,6 +21,20 @@ interface AuthState {
   clearError: () => void;
 }
 
+const PROFILE_KEY = "paypath_profile_overrides";
+
+function saveOverrides(data: Partial<Pick<User, "name" | "email">>) {
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(data));
+}
+
+function loadOverrides(): Partial<Pick<User, "name" | "email">> {
+  try {
+    return JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
@@ -35,7 +49,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         password,
       });
       setToken(data.token);
-      set({ user: data.user, isAuthenticated: true, isLoading: false });
+      set({ user: { ...data.user, ...loadOverrides() }, isAuthenticated: true, isLoading: false });
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Login failed";
       set({ error: message, isLoading: false });
@@ -74,7 +88,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true });
     try {
       const data = await apiGet<{ user: User }>("/auth/me");
-      set({ user: data.user, isAuthenticated: true, isLoading: false });
+      set({ user: { ...data.user, ...loadOverrides() }, isAuthenticated: true, isLoading: false });
     } catch {
       setToken(null);
       set({ user: null, isAuthenticated: false, isLoading: false });
@@ -82,6 +96,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   updateUser: (data) => {
+    saveOverrides(data);
     set((state) => ({
       user: state.user ? { ...state.user, ...data } : null,
     }));

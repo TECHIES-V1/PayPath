@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -27,6 +28,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuthStore();
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -34,6 +36,7 @@ export default function Sidebar() {
   };
 
   return (
+    <>
     <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 bg-sidebar border-r border-sidebar-border">
       <div className="flex flex-col flex-1 min-h-0">
         {/* Logo */}
@@ -100,14 +103,42 @@ export default function Sidebar() {
             </div>
           </div>
           <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 w-full text-left text-sm text-sidebar-foreground/50 hover:text-destructive hover:bg-destructive/10 rounded-lg px-3 py-2 transition-all duration-200"
+            onClick={() => setShowConfirm(true)}
+            className="flex items-center gap-2 w-full text-left text-sm text-sidebar-foreground/50 hover:text-destructive hover:bg-destructive/10 rounded-lg px-3 py-2 transition-all duration-200 cursor-pointer"
           >
             <HugeiconsIcon icon={Logout03Icon} className="size-4" />
             Sign out
           </button>
         </div>
       </div>
+
     </aside>
+
+      {/* Sign out confirmation modal */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-card rounded-2xl p-6 shadow-xl w-80 space-y-4 border border-border">
+            <div className="space-y-1">
+              <h3 className="font-display font-bold text-base">Sign out?</h3>
+              <p className="text-sm text-muted-foreground">Are you sure you want to sign out of PayPath?</p>
+            </div>
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="flex-1 rounded-xl border border-border py-2 text-sm font-medium hover:bg-muted transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex-1 rounded-xl bg-destructive text-destructive-foreground py-2 text-sm font-medium hover:bg-destructive/90 transition-colors cursor-pointer"
+              >
+                Sign out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

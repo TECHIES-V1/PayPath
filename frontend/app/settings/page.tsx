@@ -44,6 +44,8 @@ export default function SettingsPage() {
   const [pushNotif, setPushNotif] = useState(true);
   const [emailNotif, setEmailNotif] = useState(false);
 
+  const [logoutConfirm, setLogoutConfirm] = useState(false);
+
   const handleLogout = () => {
     logout();
     router.push("/login");
@@ -103,7 +105,7 @@ export default function SettingsPage() {
                     <button
                       key={t.value}
                       onClick={() => setTheme(t.value)}
-                      className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-medium transition-all ${
+                      className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-medium transition-all cursor-pointer ${
                         theme === t.value
                           ? "bg-primary text-primary-foreground"
                           : "bg-muted/50 text-muted-foreground hover:bg-muted"
@@ -174,15 +176,15 @@ export default function SettingsPage() {
               <CardContent className="space-y-3">
                 <Button
                   variant="outline"
-                  className="w-full justify-start gap-2"
-                  onClick={handleLogout}
+                  className="w-full justify-center gap-2"
+                  onClick={() => setLogoutConfirm(true)}
                 >
                   <HugeiconsIcon icon={Logout03Icon} className="size-4" />
                   Log out
                 </Button>
                 <Button
                   variant="destructive"
-                  className="w-full justify-start gap-2"
+                  className="w-full justify-center gap-2"
                   disabled
                   onClick={() => toast.info("Coming soon")}
                 >
@@ -196,6 +198,31 @@ export default function SettingsPage() {
       </div>
 
       <EditProfileDialog open={editOpen} onOpenChange={setEditOpen} />
+
+      {logoutConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-card rounded-2xl p-6 shadow-xl w-80 space-y-4 border border-border">
+            <div className="space-y-1">
+              <h3 className="font-display font-bold text-base">Log out?</h3>
+              <p className="text-sm text-muted-foreground">Are you sure you want to log out of PayPath?</p>
+            </div>
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={() => setLogoutConfirm(false)}
+                className="flex-1 rounded-xl border border-border py-2 text-sm font-medium hover:bg-muted transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex-1 rounded-xl bg-destructive text-destructive-foreground py-2 text-sm font-medium hover:bg-destructive/90 transition-colors cursor-pointer"
+              >
+                Log out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }
@@ -222,7 +249,7 @@ function ToggleRow({
       </div>
       <button
         onClick={() => onChange(!checked)}
-        className={`relative w-10 h-6 rounded-full transition-colors ${
+        className={`relative w-10 h-6 rounded-full transition-colors cursor-pointer ${
           checked ? "bg-primary" : "bg-muted"
         }`}
       >

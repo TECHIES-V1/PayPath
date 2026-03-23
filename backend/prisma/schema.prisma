@@ -13,8 +13,7 @@ model User {
   email        String        @unique
   password     String
   createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  transactions Transaction[]
+  updatedAt    DateTime      @default(now()) @updatedAt
   goals        Goal[]
   passports    Passport[]
 }

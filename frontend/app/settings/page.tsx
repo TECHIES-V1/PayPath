@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { toast } from "sonner";
+import LogoutConfirmDialog from "@/components/auth/LogoutConfirmDialog";
 import AppShell from "@/components/layout/AppShell";
 import Header from "@/components/layout/Header";
 import EditProfileDialog from "@/components/settings/EditProfileDialog";
@@ -37,19 +37,13 @@ const fadeUp = {
 };
 
 export default function SettingsPage() {
-  const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
   const { theme, setTheme } = useThemeStore();
   const [editOpen, setEditOpen] = useState(false);
   const [pushNotif, setPushNotif] = useState(true);
   const [emailNotif, setEmailNotif] = useState(false);
 
   const [logoutConfirm, setLogoutConfirm] = useState(false);
-
-  const handleLogout = () => {
-    logout();
-    router.push("/login");
-  };
 
   const memberSince = user?.createdAt
     ? new Date(user.createdAt).toLocaleDateString("en-US", {
@@ -180,7 +174,7 @@ export default function SettingsPage() {
                   onClick={() => setLogoutConfirm(true)}
                 >
                   <HugeiconsIcon icon={Logout03Icon} className="size-4" />
-                  Log out
+                  Sign out
                 </Button>
                 <Button
                   variant="destructive"
@@ -198,31 +192,14 @@ export default function SettingsPage() {
       </div>
 
       <EditProfileDialog open={editOpen} onOpenChange={setEditOpen} />
-
-      {logoutConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="bg-card rounded-2xl p-6 shadow-xl w-80 space-y-4 border border-border">
-            <div className="space-y-1">
-              <h3 className="font-display font-bold text-base">Log out?</h3>
-              <p className="text-sm text-muted-foreground">Are you sure you want to log out of PayPath?</p>
-            </div>
-            <div className="flex gap-2 pt-1">
-              <button
-                onClick={() => setLogoutConfirm(false)}
-                className="flex-1 rounded-xl border border-border py-2 text-sm font-medium hover:bg-muted transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleLogout}
-                className="flex-1 rounded-xl bg-destructive text-destructive-foreground py-2 text-sm font-medium hover:bg-destructive/90 transition-colors cursor-pointer"
-              >
-                Log out
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <LogoutConfirmDialog
+        open={logoutConfirm}
+        onOpenChange={setLogoutConfirm}
+        title="Sign out?"
+        description="Are you sure you want to sign out of PayPath?"
+        confirmLabel="Sign out"
+        pendingLabel="Signing out..."
+      />
     </AppShell>
   );
 }

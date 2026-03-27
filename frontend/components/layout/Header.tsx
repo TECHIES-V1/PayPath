@@ -53,7 +53,7 @@ export default function Header({ title }: HeaderProps) {
           </div>
 
           <Link href="/settings" className="rounded-xl">
-            <Avatar className="size-9 rounded-xl ring-2 ring-primary/20 hover:ring-primary/40 transition-all">
+            <Avatar className="size-9 rounded-xl ring-2 ring-primary/20 hover:ring-primary/40 transition-all avatar-glow">
               <AvatarImage src={user?.avatarUrl || ""} alt={user?.name || "User"} />
               <AvatarFallback className="rounded-xl bg-primary/15 text-primary text-xs font-bold">
                 {user?.name?.charAt(0)?.toUpperCase() || "U"}

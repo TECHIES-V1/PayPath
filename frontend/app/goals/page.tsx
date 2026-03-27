@@ -33,7 +33,7 @@ function daysUntil(dateStr: string) {
 }
 
 export default function GoalsPage() {
-  const { goals, addFunds, deleteGoal, fetchGoals, isLoading } = useGoalStore();
+  const { goals, addFunds, deleteGoal, fetchGoals, isLoading, error } = useGoalStore();
   const [addOpen, setAddOpen] = useState(false);
 
   useEffect(() => {
@@ -74,6 +74,13 @@ export default function GoalsPage() {
             New Goal
           </Button>
         </div>
+
+        {error && (
+          <div className="rounded-2xl bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive flex items-center justify-between">
+            <span>{error}</span>
+            <button onClick={() => fetchGoals()} className="text-xs underline ml-4 shrink-0">Retry</button>
+          </div>
+        )}
 
         {isLoading ? (
           <div className="space-y-3 py-4">

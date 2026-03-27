@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ViewIcon,
@@ -75,9 +76,9 @@ export default function BalanceCard() {
               >
                 <HugeiconsIcon icon={visible ? ViewIcon : ViewOffIcon} className="size-4 text-white/50" />
               </button>
-              <button className="size-8 rounded-xl bg-primary flex items-center justify-center hover:bg-primary/85 transition-colors">
+              <Link href="/transactions" className="size-8 rounded-xl bg-primary flex items-center justify-center hover:bg-primary/85 transition-colors">
                 <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-4 text-primary-foreground" />
-              </button>
+              </Link>
             </div>
           </div>
 
@@ -108,14 +109,14 @@ export default function BalanceCard() {
           <div className="flex gap-2">
             <button
               onClick={() => openAdd("income")}
-              className="flex items-center gap-1.5 bg-white/[0.08] hover:bg-white/[0.12] text-white rounded-full px-4 py-2 text-xs font-medium transition-colors"
+              className="flex items-center gap-1.5 bg-white/[0.08] hover:bg-white/[0.12] text-white rounded-full px-4 py-2 text-xs font-medium transition-colors cursor-pointer"
             >
               <HugeiconsIcon icon={Add01Icon} className="size-3.5" />
               Add Income
             </button>
             <button
               onClick={() => openAdd("expense")}
-              className="flex items-center gap-1.5 bg-white/[0.08] hover:bg-white/[0.12] text-white rounded-full px-4 py-2 text-xs font-medium transition-colors"
+              className="flex items-center gap-1.5 bg-white/[0.08] hover:bg-white/[0.12] text-white rounded-full px-4 py-2 text-xs font-medium transition-colors cursor-pointer"
             >
               <HugeiconsIcon icon={Remove01Icon} className="size-3.5" />
               Add Expense

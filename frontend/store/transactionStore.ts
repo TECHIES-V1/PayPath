@@ -13,6 +13,7 @@ export interface Transaction {
 interface TransactionState {
   transactions: Transaction[];
   isLoading: boolean;
+  error: string | null;
   filter: "all" | "income" | "expense";
   setFilter: (filter: "all" | "income" | "expense") => void;
   fetchTransactions: () => Promise<void>;
@@ -25,12 +26,13 @@ interface TransactionState {
 export const useTransactionStore = create<TransactionState>((set, get) => ({
   transactions: [],
   isLoading: false,
+  error: null,
   filter: "all",
 
   setFilter: (filter) => set({ filter }),
 
   fetchTransactions: async () => {
-    set({ isLoading: true });
+    set({ isLoading: true, error: null });
     try {
       const data = await apiGet<{ transactions: any[]; total: number }>("/transactions?limit=100");
       const transactions: Transaction[] = data.transactions.map((t) => ({
@@ -42,41 +44,56 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
         note: t.note,
       }));
       set({ transactions, isLoading: false });
-    } catch {
-      set({ isLoading: false });
+
+      // Fire notifications for large expenses (>50k)
+      const { addNotification } = await import("@/store/notificationStore").then((m) => m.useNotificationStore.getState());
+      transactions
+        .filter((t) => t.type === "expense" && t.amount >= 50000)
+        .slice(0, 3)
+        .forEach((t) =>
+          addNotification({
+            title: "Large expense detected",
+            message: `₦${t.amount.toLocaleString()} on ${t.category}`,
+            type: "warning",
+          })
+        );
+    } catch (e: any) {
+      set({ isLoading: false, error: e?.message || "Failed to load transactions" });
     }
   },
 
   addTransaction: async (data) => {
-    try {
-      const res = await apiPost<{ transaction: any }>("/transactions", {
-        amount: data.amount,
-        type: data.type,
-        category: data.category,
-        date: data.date ? new Date(data.date).toISOString() : undefined,
+    const res = await apiPost<{ transaction: any }>("/transactions", {
+      amount: data.amount,
+      type: data.type,
+      category: data.category,
+      date: data.date ? new Date(data.date).toISOString() : undefined,
+    });
+    const tx: Transaction = {
+      id: res.transaction.id,
+      category: res.transaction.category,
+      amount: Number(res.transaction.amount),
+      type: res.transaction.type as "income" | "expense",
+      date: res.transaction.date?.split("T")[0] || res.transaction.date,
+    };
+    set((state) => ({ transactions: [tx, ...state.transactions] }));
+
+    // Notify on income
+    if (tx.type === "income") {
+      const { addNotification } = await import("@/store/notificationStore").then((m) => m.useNotificationStore.getState());
+      addNotification({
+        title: "Income recorded",
+        message: `+₦${tx.amount.toLocaleString()} from ${tx.category}`,
+        type: "success",
       });
-      const tx: Transaction = {
-        id: res.transaction.id,
-        category: res.transaction.category,
-        amount: Number(res.transaction.amount),
-        type: res.transaction.type as "income" | "expense",
-        date: res.transaction.date?.split("T")[0] || res.transaction.date,
-      };
-      set((state) => ({ transactions: [tx, ...state.transactions] }));
-    } catch (error) {
-      throw error;
     }
   },
 
   deleteTransaction: async (id) => {
-    try {
-      await apiDelete(`/transactions/${id}`);
-      set((state) => ({
-        transactions: state.transactions.filter((t) => t.id !== id),
-      }));
-    } catch (error) {
-      throw error;
-    }
+    await apiDelete(`/transactions/${id}`);
+    set((state) => ({
+      transactions: state.transactions.filter((t) => t.id !== id),
+    }));
   },
 
   getFiltered: () => {

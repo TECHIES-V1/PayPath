@@ -8,6 +8,7 @@ import BalanceCard from "@/components/dashboard/BalanceCard";
 import AITipCard from "@/components/dashboard/AITipCard";
 import RecentTransactions from "@/components/dashboard/RecentTransactions";
 import GoalsSummary from "@/components/dashboard/GoalsSummary";
+import SpendingChart from "@/components/dashboard/SpendingChart";
 import { useAuthStore } from "@/store/authStore";
 import { useTransactionStore } from "@/store/transactionStore";
 import { useGoalStore } from "@/store/goalStore";
@@ -78,6 +79,11 @@ export default function DashboardPage() {
               </motion.div>
             </div>
           </div>
+
+          {/* Analytics chart */}
+          <motion.div variants={fadeUp}>
+            <SpendingChart />
+          </motion.div>
         </motion.div>
       </div>
     </AppShell>

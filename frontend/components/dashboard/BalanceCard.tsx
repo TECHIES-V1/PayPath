@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ViewIcon,
   ViewOffIcon,
   Add01Icon,
   Remove01Icon,
+  ArrowUpRight01Icon
 } from "@hugeicons/core-free-icons";
 import { useTransactionStore } from "@/store/transactionStore";
 import AddTransactionDialog from "@/components/transactions/AddTransactionDialog";
@@ -71,12 +73,17 @@ export default function BalanceCard() {
           {/* Header row */}
           <div className="flex items-center justify-between mb-6">
             <p className="text-xs font-medium text-white/40 uppercase tracking-wider">Total Balance</p>
-            <button
-              onClick={() => setVisible(!visible)}
-              className="size-8 rounded-xl bg-white/[0.06] flex items-center justify-center hover:bg-white/10 transition-colors"
-            >
-              <HugeiconsIcon icon={visible ? ViewIcon : ViewOffIcon} className="size-4 text-white/50" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setVisible(!visible)}
+                className="size-8 rounded-xl bg-white/[0.06] flex items-center justify-center hover:bg-white/10 transition-colors"
+              >
+                <HugeiconsIcon icon={visible ? ViewIcon : ViewOffIcon} className="size-4 text-white/50" />
+              </button>
+              <Link href="/transactions" className="size-8 rounded-xl bg-primary flex items-center justify-center hover:bg-primary/85 transition-colors">
+                <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-4 text-primary-foreground" />
+              </Link>
+            </div>
           </div>
 
           {/* Balance */}
@@ -106,14 +113,14 @@ export default function BalanceCard() {
           <div className="flex gap-2">
             <button
               onClick={() => openAdd("income")}
-              className="flex items-center gap-1.5 bg-white/[0.08] hover:bg-white/[0.12] text-white rounded-full px-4 py-2 text-xs font-medium transition-colors"
+              className="flex items-center gap-1.5 bg-white/[0.08] hover:bg-white/[0.12] text-white rounded-full px-4 py-2 text-xs font-medium transition-colors cursor-pointer"
             >
               {visible && <HugeiconsIcon icon={Add01Icon} className="size-3 md:size-3.5" />}
               Add Income
             </button>
             <button
               onClick={() => openAdd("expense")}
-              className="flex items-center gap-1.5 bg-white/[0.08] hover:bg-white/[0.12] text-white rounded-full px-4 py-2 text-xs font-medium transition-colors"
+              className="flex items-center gap-1.5 bg-white/[0.08] hover:bg-white/[0.12] text-white rounded-full px-4 py-2 text-xs font-medium transition-colors cursor-pointer"
             >
               {visible && <HugeiconsIcon icon={Remove01Icon} className="size-3" />}
               Add Expense

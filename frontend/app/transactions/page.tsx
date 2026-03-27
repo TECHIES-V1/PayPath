@@ -62,7 +62,7 @@ function formatDate(dateStr: string) {
 }
 
 export default function TransactionsPage() {
-  const { filter, setFilter, getFiltered, deleteTransaction, fetchTransactions, isLoading } = useTransactionStore();
+  const { filter, setFilter, getFiltered, deleteTransaction, fetchTransactions, isLoading, error } = useTransactionStore();
   const transactions = getFiltered();
   const [addOpen, setAddOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
@@ -112,6 +112,15 @@ export default function TransactionsPage() {
           </div>
         </div>
 
+        {/* Error state */}
+        {error && (
+          <div className="rounded-2xl bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive flex items-center justify-between">
+            <span>{error}</span>
+            <button onClick={() => fetchTransactions()} className="text-xs underline ml-4 shrink-0">Retry</button>
+          </div>
+        )}
+
+        {/* Loading / Transaction list / Empty state */}
         {isLoading ? (
           <div className="space-y-3 py-4">
             {[...Array(5)].map((_, index) => (

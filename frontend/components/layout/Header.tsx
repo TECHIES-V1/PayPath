@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/authStore";
 import { useNotificationStore } from "@/store/notificationStore";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Notification01Icon, Cancel01Icon, Tick01Icon } from "@hugeicons/core-free-icons";
 
@@ -35,8 +36,6 @@ export default function Header({ title }: HeaderProps) {
           <h1 className="text-xl font-display font-bold text-foreground hidden md:block">{title}</h1>
         </div>
         <div className="flex items-center gap-3">
-          <h1 className="text-lg font-display font-bold text-foreground md:hidden">{title}</h1>
-
           <div className="relative">
             <button
               onClick={handleOpen}
@@ -114,8 +113,13 @@ export default function Header({ title }: HeaderProps) {
             )}
           </div>
 
-          <Link href="/settings" className="size-9 rounded-xl bg-primary/15 ring-2 ring-primary/20 flex items-center justify-center text-primary text-xs font-bold hover:ring-primary/40 transition-all">
-            {user?.name?.charAt(0)?.toUpperCase() || "U"}
+          <Link href="/settings" className="rounded-xl">
+            <Avatar className="size-9 rounded-xl ring-2 ring-primary/20 hover:ring-primary/40 transition-all avatar-glow">
+              <AvatarImage src={user?.avatarUrl || ""} alt={user?.name || "User"} />
+              <AvatarFallback className="rounded-xl bg-primary/15 text-primary text-xs font-bold">
+                {user?.name?.charAt(0)?.toUpperCase() || "U"}
+              </AvatarFallback>
+            </Avatar>
           </Link>
         </div>
       </div>

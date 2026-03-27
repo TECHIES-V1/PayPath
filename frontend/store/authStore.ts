@@ -5,6 +5,7 @@ interface User {
   id: string;
   name: string;
   email: string;
+  avatarUrl?: string;
   createdAt: string;
 }
 
@@ -17,17 +18,17 @@ interface AuthState {
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   fetchUser: () => Promise<void>;
-  updateUser: (data: Partial<Pick<User, "name" | "email">>) => void;
+  updateUser: (data: Partial<Pick<User, "name" | "email" | "avatarUrl">>) => void;
   clearError: () => void;
 }
 
 const PROFILE_KEY = "paypath_profile_overrides";
 
-function saveOverrides(data: Partial<Pick<User, "name" | "email">>) {
+function saveOverrides(data: Partial<Pick<User, "name" | "email" | "avatarUrl">>) {
   localStorage.setItem(PROFILE_KEY, JSON.stringify(data));
 }
 
-function loadOverrides(): Partial<Pick<User, "name" | "email">> {
+function loadOverrides(): Partial<Pick<User, "name" | "email" | "avatarUrl">> {
   try {
     return JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}");
   } catch {

@@ -34,6 +34,21 @@ export default function AddGoalDialog({ open, onOpenChange }: AddGoalDialogProps
 
   const [submitting, setSubmitting] = useState(false);
 
+  const normalizeAmount = (value: string) => value.replace(/[^\d.]/g, "");
+
+  const formatAmountForInput = (value: string) => {
+    if (!value) return "";
+    const [intPartRaw, decPartRaw] = value.split(".");
+    const intPart = intPartRaw.replace(/\D/g, "");
+    if (!intPart) return "";
+    const withCommas = new Intl.NumberFormat("en-NG").format(Number(intPart));
+    if (decPartRaw !== undefined) {
+      const decPart = decPartRaw.replace(/\D/g, "").slice(0, 2);
+      return decPart.length ? `${withCommas}.${decPart}` : `${withCommas}.`;
+    }
+    return withCommas;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -41,7 +56,8 @@ export default function AddGoalDialog({ open, onOpenChange }: AddGoalDialogProps
       toast.error("Please enter a goal name");
       return;
     }
-    const numTarget = parseFloat(target);
+    const cleanedTarget = normalizeAmount(target);
+    const numTarget = parseFloat(cleanedTarget);
     if (!numTarget || numTarget <= 0) {
       toast.error("Please enter a valid target amount");
       return;
@@ -98,12 +114,15 @@ export default function AddGoalDialog({ open, onOpenChange }: AddGoalDialogProps
             <Label htmlFor="goal-target">Target amount (NGN)</Label>
             <Input
               id="goal-target"
-              type="number"
-              min="0"
-              step="1000"
+              type="text"
+              inputMode="decimal"
+              autoComplete="off"
               placeholder="0"
               value={target}
-              onChange={(e) => setTarget(e.target.value)}
+              onChange={(e) => {
+                const raw = normalizeAmount(e.target.value);
+                setTarget(formatAmountForInput(raw));
+              }}
               className="text-lg font-display font-bold"
               required
             />

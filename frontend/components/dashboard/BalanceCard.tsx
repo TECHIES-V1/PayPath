@@ -6,7 +6,6 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ViewIcon,
   ViewOffIcon,
-  ArrowUpRight01Icon,
   Add01Icon,
   Remove01Icon,
 } from "@hugeicons/core-free-icons";
@@ -19,6 +18,10 @@ function formatCurrency(amount: number) {
     currency: "NGN",
     minimumFractionDigits: 0,
   }).format(amount);
+}
+
+function formatHiddenAmount() {
+  return "****";
 }
 
 function useCountUp(target: number, duration = 800) {
@@ -83,7 +86,7 @@ export default function BalanceCard() {
           </div>
 
           {/* Balance */}
-          <h2 className="text-4xl md:text-5xl font-display font-bold tracking-tight mb-8">
+          <h2 className="text-3xl md:text-5xl font-display font-bold tracking-tight mb-8">
             {isLoading ? (
               <span className="inline-block h-10 w-48 rounded-xl skeleton bg-white/[0.06]" />
             ) : visible ? formatCurrency(animatedBalance) : "****"}
@@ -93,14 +96,14 @@ export default function BalanceCard() {
           <div className="flex flex-wrap gap-3 mb-6">
             <div className="bg-white/[0.06] backdrop-blur-sm rounded-2xl px-4 py-3 flex-1 min-w-[140px]">
               <p className="text-[11px] text-white/40 font-medium mb-1">Income</p>
-              <p className="text-lg font-display font-bold text-primary">
-                +{formatCurrency(income)}
+              <p className="text-sm md:text-lg font-display font-bold text-primary">
+                {visible ? `+${formatCurrency(income)}` : formatHiddenAmount()}
               </p>
             </div>
             <div className="bg-white/[0.06] backdrop-blur-sm rounded-2xl px-4 py-3 flex-1 min-w-[140px]">
               <p className="text-[11px] text-white/40 font-medium mb-1">Expenses</p>
-              <p className="text-lg font-display font-bold text-red-400">
-                -{formatCurrency(expense)}
+              <p className="text-sm md:text-lg font-display font-bold text-red-400">
+                {visible ? `-${formatCurrency(expense)}` : formatHiddenAmount()}
               </p>
             </div>
           </div>
@@ -111,14 +114,14 @@ export default function BalanceCard() {
               onClick={() => openAdd("income")}
               className="flex items-center gap-1.5 bg-white/[0.08] hover:bg-white/[0.12] text-white rounded-full px-4 py-2 text-xs font-medium transition-colors cursor-pointer"
             >
-              <HugeiconsIcon icon={Add01Icon} className="size-3.5" />
+              {visible && <HugeiconsIcon icon={Add01Icon} className="size-3 md:size-3.5" />}
               Add Income
             </button>
             <button
               onClick={() => openAdd("expense")}
               className="flex items-center gap-1.5 bg-white/[0.08] hover:bg-white/[0.12] text-white rounded-full px-4 py-2 text-xs font-medium transition-colors cursor-pointer"
             >
-              <HugeiconsIcon icon={Remove01Icon} className="size-3.5" />
+              {visible && <HugeiconsIcon icon={Remove01Icon} className="size-3" />}
               Add Expense
             </button>
           </div>

@@ -1,13 +1,22 @@
 import { create } from "zustand";
 import { apiGet, apiPost, apiDelete } from "@/lib/api";
 
+interface ApiTransaction {
+  id: string;
+  category: string;
+  amount: number | string;
+  type: "income" | "expense";
+  date: string;
+  notes?: string | null;
+}
+
 export interface Transaction {
   id: string;
   category: string;
   amount: number;
   type: "income" | "expense";
   date: string;
-  note?: string;
+  notes?: string;
 }
 
 interface TransactionState {
@@ -34,14 +43,14 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
   fetchTransactions: async () => {
     set({ isLoading: true, error: null });
     try {
-      const data = await apiGet<{ transactions: any[]; total: number }>("/transactions?limit=100");
+      const data = await apiGet<{ transactions: ApiTransaction[]; total: number }>("/transactions?limit=100");
       const transactions: Transaction[] = data.transactions.map((t) => ({
         id: t.id,
         category: t.category,
         amount: Number(t.amount),
         type: t.type as "income" | "expense",
         date: t.date?.split("T")[0] || t.date,
-        note: t.note,
+        notes: t.notes ?? undefined,
       }));
       set({ transactions, isLoading: false });
 
@@ -62,12 +71,14 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
     }
   },
 
-  addTransaction: async (data) => {
-    const res = await apiPost<{ transaction: any }>("/transactions", {
+addTransaction: async (data) => {
+  try {
+    const res = await apiPost<{ transaction: ApiTransaction }>("/transactions", {
       amount: data.amount,
       type: data.type,
       category: data.category,
       date: data.date ? new Date(data.date).toISOString() : undefined,
+      notes: data.notes,
     });
     const tx: Transaction = {
       id: res.transaction.id,
@@ -75,6 +86,7 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
       amount: Number(res.transaction.amount),
       type: res.transaction.type as "income" | "expense",
       date: res.transaction.date?.split("T")[0] || res.transaction.date,
+      notes: res.transaction.notes ?? undefined,
     };
     set((state) => ({ transactions: [tx, ...state.transactions] }));
 
@@ -88,7 +100,6 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
       });
     }
 
-    // Notify on income
     if (tx.type === "income") {
       addNotification({
         title: "Income recorded",
@@ -96,7 +107,10 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
         type: "success",
       });
     }
-  },
+  } catch (error) {
+    throw error;
+  }
+},
 
   deleteTransaction: async (id) => {
     await apiDelete(`/transactions/${id}`);

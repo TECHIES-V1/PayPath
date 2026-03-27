@@ -81,9 +81,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               <div className="size-10 rounded-xl bg-primary flex items-center justify-center">
                 <span className="text-primary-foreground font-display font-bold text-lg">P</span>
               </div>
-              <h1 className="text-2xl font-display font-bold">PayPath</h1>
+              <h1 className="text-xl md:text-2xl font-display font-bold">PayPath</h1>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs md:text-sm text-muted-foreground">
               Your AI-powered financial coach
             </p>
           </div>

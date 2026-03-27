@@ -32,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn(clashDisplay.variable, comfortaa.variable)} suppressHydrationWarning>
+    <html lang="en" className={cn("dark", clashDisplay.variable, comfortaa.variable)} suppressHydrationWarning>
       <body className="antialiased">
         <ThemeProvider />
         {children}

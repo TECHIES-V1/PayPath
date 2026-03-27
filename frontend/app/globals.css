@@ -190,40 +190,4 @@
   .animate-pulse-dot {
     animation: pulse-dot 2s ease-in-out infinite;
   }
-  .avatar-glow {
-    position: relative;
-  }
-  .avatar-glow::before {
-    content: "";
-    position: absolute;
-    inset: -3px;
-    border-radius: inherit;
-    padding: 2px;
-    background: conic-gradient(
-      from 0deg,
-      oklch(0.88 0.22 120 / 0.15),
-      oklch(0.88 0.22 120 / 0.9),
-      oklch(0.70 0.16 145 / 0.35),
-      oklch(0.88 0.22 120 / 0.15)
-    );
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    animation: avatar-orbit 2.2s linear infinite;
-  }
-  .avatar-glow::after {
-    content: "";
-    position: absolute;
-    inset: -6px;
-    border-radius: inherit;
-    background: radial-gradient(circle, oklch(0.88 0.22 120 / 0.18), transparent 60%);
-    opacity: 0.8;
-    pointer-events: none;
-  }
-}
-
-@keyframes avatar-orbit {
-  to {
-    transform: rotate(360deg);
-  }
 }

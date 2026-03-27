@@ -1,6 +1,15 @@
 import { create } from "zustand";
 import { apiGet, apiPost, apiPut, apiDelete } from "@/lib/api";
 
+interface ApiGoal {
+  id: string;
+  name: string;
+  targetAmount: number | string;
+  currentAmount: number | string;
+  deadline: string;
+  progress?: number;
+}
+
 export interface Goal {
   id: string;
   name: string;
@@ -15,7 +24,7 @@ interface GoalState {
   isLoading: boolean;
   fetchGoals: () => Promise<void>;
   addGoal: (data: Omit<Goal, "id" | "currentAmount">) => Promise<void>;
-  updateGoal: (id: string, data: Partial<Goal>) => void;
+  updateGoal: (id: string, data: Partial<Goal>) => Promise<void>;
   deleteGoal: (id: string) => Promise<void>;
   addFunds: (id: string, amount: number) => Promise<void>;
 }
@@ -27,7 +36,7 @@ export const useGoalStore = create<GoalState>((set) => ({
   fetchGoals: async () => {
     set({ isLoading: true });
     try {
-      const data = await apiGet<{ goals: any[] }>("/goals");
+      const data = await apiGet<{ goals: ApiGoal[] }>("/goals");
       const goals: Goal[] = data.goals.map((g) => ({
         id: g.id,
         name: g.name,
@@ -44,7 +53,7 @@ export const useGoalStore = create<GoalState>((set) => ({
 
   addGoal: async (data) => {
     try {
-      const res = await apiPost<{ goal: any }>("/goals", {
+      const res = await apiPost<{ goal: ApiGoal }>("/goals", {
         name: data.name,
         targetAmount: data.targetAmount,
         deadline: new Date(data.deadline).toISOString(),
@@ -63,10 +72,30 @@ export const useGoalStore = create<GoalState>((set) => ({
     }
   },
 
-  updateGoal: (id, data) => {
-    set((state) => ({
-      goals: state.goals.map((g) => (g.id === id ? { ...g, ...data } : g)),
-    }));
+  updateGoal: async (id, data) => {
+    try {
+      const payload = {
+        ...(data.name !== undefined && { name: data.name }),
+        ...(data.targetAmount !== undefined && { targetAmount: data.targetAmount }),
+        ...(data.deadline !== undefined && { deadline: new Date(data.deadline).toISOString() }),
+      };
+
+      const res = await apiPut<{ goal: ApiGoal }>(`/goals/${id}`, payload);
+      const goal: Goal = {
+        id: res.goal.id,
+        name: res.goal.name,
+        targetAmount: Number(res.goal.targetAmount),
+        currentAmount: Number(res.goal.currentAmount),
+        deadline: res.goal.deadline?.split("T")[0] || res.goal.deadline,
+        progress: res.goal.progress || 0,
+      };
+
+      set((state) => ({
+        goals: state.goals.map((g) => (g.id === id ? goal : g)),
+      }));
+    } catch (error) {
+      throw error;
+    }
   },
 
   deleteGoal: async (id) => {
@@ -82,7 +111,7 @@ export const useGoalStore = create<GoalState>((set) => ({
 
   addFunds: async (id, amount) => {
     try {
-      const res = await apiPost<{ goal: any }>(`/goals/${id}/contribute`, { amount });
+      const res = await apiPost<{ goal: ApiGoal }>(`/goals/${id}/contribute`, { amount });
       set((state) => ({
         goals: state.goals.map((g) =>
           g.id === id

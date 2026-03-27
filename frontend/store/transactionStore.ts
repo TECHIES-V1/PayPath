@@ -78,9 +78,18 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
     };
     set((state) => ({ transactions: [tx, ...state.transactions] }));
 
+    const { addNotification } = await import("@/store/notificationStore").then((m) => m.useNotificationStore.getState());
+
+    if (tx.type === "expense" && tx.amount >= 50000) {
+      addNotification({
+        title: "Large expense detected",
+        message: `₦${tx.amount.toLocaleString()} on ${tx.category}`,
+        type: "warning",
+      });
+    }
+
     // Notify on income
     if (tx.type === "income") {
-      const { addNotification } = await import("@/store/notificationStore").then((m) => m.useNotificationStore.getState());
       addNotification({
         title: "Income recorded",
         message: `+₦${tx.amount.toLocaleString()} from ${tx.category}`,

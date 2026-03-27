@@ -44,7 +44,7 @@ export default function Header({ title }: HeaderProps) {
             >
               <HugeiconsIcon icon={Notification01Icon} className="size-[18px] text-muted-foreground" />
               {count > 0 && (
-                <span className="absolute -top-1 -right-1 size-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 size-5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
                   {count > 9 ? "9+" : count}
                 </span>
               )}

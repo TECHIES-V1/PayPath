@@ -1,27 +1,34 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
+import { toast } from "sonner";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  Activity01Icon,
+  Add01Icon,
+  Briefcase01Icon,
+  Bus01Icon,
+  CreditCardIcon,
+  Delete01Icon,
+  Invoice01Icon,
+  MoneyReceive01Icon,
+  Restaurant01Icon,
+  ShoppingBag01Icon,
+} from "@hugeicons/core-free-icons";
 import AppShell from "@/components/layout/AppShell";
 import Header from "@/components/layout/Header";
 import AddTransactionDialog from "@/components/transactions/AddTransactionDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useTransactionStore, type Transaction } from "@/store/transactionStore";
-import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  CreditCardIcon,
-  Add01Icon,
-  Restaurant01Icon,
-  MoneyReceive01Icon,
-  Bus01Icon,
-  Briefcase01Icon,
-  Invoice01Icon,
-  ShoppingBag01Icon,
-  Activity01Icon,
-  Delete01Icon,
-} from "@hugeicons/core-free-icons";
-import { toast } from "sonner";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useTransactionStore, type Transaction } from "@/store/transactionStore";
 
 const categoryConfig: Record<string, { icon: typeof Restaurant01Icon; color: string; bg: string }> = {
   Food: { icon: Restaurant01Icon, color: "text-orange-400", bg: "bg-orange-400/10" },
@@ -58,6 +65,7 @@ export default function TransactionsPage() {
   const { filter, setFilter, getFiltered, deleteTransaction, fetchTransactions, isLoading } = useTransactionStore();
   const transactions = getFiltered();
   const [addOpen, setAddOpen] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
 
   useEffect(() => {
     fetchTransactions();
@@ -67,6 +75,10 @@ export default function TransactionsPage() {
     try {
       await deleteTransaction(tx.id);
       toast.success("Transaction deleted");
+
+      if (selectedTransaction?.id === tx.id) {
+        setSelectedTransaction(null);
+      }
     } catch {
       toast.error("Failed to delete transaction");
     }
@@ -77,20 +89,19 @@ export default function TransactionsPage() {
   return (
     <AppShell>
       <Header title="Transactions" />
-      <div className="p-4 md:p-6 space-y-5">
-        {/* Filter tabs + add button */}
+      <div className="space-y-5 px-2 py-4 md:p-6">
         <div className="flex items-center gap-2">
-          {filters.map((f) => (
+          {filters.map((value) => (
             <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors capitalize ${
-                filter === f
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted/50 text-muted-foreground hover:bg-muted"
-              }`}
+              key={value}
+              type="button"
+              onClick={() => setFilter(value)}
+              className={`rounded-xl px-4 py-2 text-sm font-semibold capitalize transition-colors ${filter === value
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                }`}
             >
-              {f}
+              {value}
             </button>
           ))}
           <div className="ml-auto">
@@ -101,11 +112,10 @@ export default function TransactionsPage() {
           </div>
         </div>
 
-        {/* Loading / Transaction list / Empty state */}
         {isLoading ? (
           <div className="space-y-3 py-4">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex items-center gap-3 py-2.5">
+            {[...Array(5)].map((_, index) => (
+              <div key={index} className="flex items-center gap-3 py-2.5">
                 <div className="size-10 rounded-xl skeleton" />
                 <div className="flex-1 space-y-2">
                   <div className="h-3.5 w-24 rounded skeleton" />
@@ -123,20 +133,20 @@ export default function TransactionsPage() {
             className="flex flex-col items-center justify-center py-20 text-center"
           >
             <div className="relative mb-8">
-              <div className="size-28 rounded-[2rem] bg-primary/10 flex items-center justify-center">
+              <div className="flex size-28 items-center justify-center rounded-[2rem] bg-primary/10">
                 <HugeiconsIcon icon={CreditCardIcon} className="size-12 text-primary" />
               </div>
               <motion.div
                 animate={{ y: [-4, 4, -4] }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -top-3 -right-3 size-10 rounded-xl bg-primary/15 rotate-12"
+                className="absolute -top-3 -right-3 size-10 rotate-12 rounded-xl bg-primary/15"
               />
             </div>
-            <h3 className="text-xl font-display font-bold mb-2">No transactions yet</h3>
-            <p className="text-sm text-muted-foreground max-w-xs mb-6 leading-relaxed">
+            <h3 className="mb-2 font-display md:text-xl text-[1rem] font-bold">No transactions yet</h3>
+            <p className="mb-6 max-w-xs md:text-sm text-xs leading-relaxed text-muted-foreground">
               Start logging your income and expenses to track your financial progress.
             </p>
-            <Button size="lg" className="rounded-xl" onClick={() => setAddOpen(true)}>
+            <Button size="lg" className="rounded-xl text-xs" onClick={() => setAddOpen(true)}>
               <HugeiconsIcon icon={Add01Icon} className="size-4" />
               Log Your First Transaction
             </Button>
@@ -144,37 +154,51 @@ export default function TransactionsPage() {
         ) : (
           <Card>
             <CardContent className="space-y-1">
-              {transactions.map((tx, i) => {
+              {transactions.map((tx, index) => {
                 const config = categoryConfig[tx.category] || defaultConfig;
+
                 return (
                   <motion.div
                     key={tx.id}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.2, delay: i * 0.03 }}
-                    className="flex items-center gap-3 py-2.5 px-2 -mx-2 rounded-xl hover:bg-muted/50 transition-colors group"
+                    transition={{ duration: 0.2, delay: index * 0.03 }}
+                    className="group -mx-2 flex cursor-pointer items-center gap-3 rounded-xl px-2 py-2.5 transition-colors hover:bg-muted/50"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setSelectedTransaction(tx)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setSelectedTransaction(tx);
+                      }
+                    }}
                   >
-                    <div className={`size-10 rounded-xl ${config.bg} flex items-center justify-center shrink-0`}>
+                    <div className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${config.bg}`}>
                       <HugeiconsIcon icon={config.icon} className={`size-[18px] ${config.color}`} />
                     </div>
-                    <div className="flex-1 min-w-0">
+
+                    <div className="min-w-0 flex-1">
                       <p className="text-sm font-semibold">{tx.category}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatDate(tx.date)}
-                        {tx.note && ` · ${tx.note}`}
-                      </p>
+                      <p className="text-xs text-muted-foreground">{formatDate(tx.date)}</p>
                     </div>
+
                     <span
-                      className={`text-sm font-display font-bold tabular-nums ${
-                        tx.type === "income" ? "text-primary" : "text-foreground"
-                      }`}
+                      className={`text-xs font-display font-bold tabular-nums ${tx.type === "income" ? "text-primary" : "text-foreground"
+                        }`}
                     >
                       {tx.type === "income" ? "+" : "-"}
                       {formatCurrency(tx.amount)}
                     </span>
+
                     <button
-                      onClick={() => handleDelete(tx)}
-                      className="opacity-0 group-hover:opacity-100 size-7 rounded-lg flex items-center justify-center hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all"
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        void handleDelete(tx);
+                      }}
+                      className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive"
+                      aria-label={`Delete ${tx.category} transaction`}
                     >
                       <HugeiconsIcon icon={Delete01Icon} className="size-3.5" />
                     </button>
@@ -187,6 +211,77 @@ export default function TransactionsPage() {
       </div>
 
       <AddTransactionDialog open={addOpen} onOpenChange={setAddOpen} />
+      <TransactionDetailsDialog
+        transaction={selectedTransaction}
+        open={selectedTransaction !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedTransaction(null);
+        }}
+      />
     </AppShell>
+  );
+}
+
+function TransactionDetailsDialog({
+  transaction,
+  open,
+  onOpenChange,
+}: {
+  transaction: Transaction | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  if (!transaction) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="rounded-2xl p-6 sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="font-display text-lg font-bold">Transaction details</DialogTitle>
+          <DialogDescription>View the full details for this transaction.</DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-0 py-2">
+          <DetailRow label="Category" value={transaction.category} separated />
+          <DetailRow
+            label="Amount"
+            value={`${transaction.type === "income" ? "+" : "-"}${formatCurrency(transaction.amount)}`}
+            valueClassName={transaction.type === "income" ? "text-primary" : "text-foreground"}
+            separated
+          />
+          <DetailRow
+            label="Date"
+            value={new Date(transaction.date).toLocaleDateString("en-US", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            })}
+            separated
+          />
+          {transaction.notes && <DetailRow label="Description" value={transaction.notes} multiline separated />}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function DetailRow({
+  label,
+  value,
+  valueClassName,
+  multiline = false,
+  separated = false,
+}: {
+  label: string;
+  value: string;
+  valueClassName?: string;
+  multiline?: boolean;
+  separated?: boolean;
+}) {
+  return (
+    <div className={`space-y-1 ${separated ? "border-t border-dotted border-border/80 py-3 first:border-t-0 first:pt-0 last:pb-0" : ""}`}>
+      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className={`text-sm ${multiline ? "leading-relaxed" : "font-medium"} ${valueClassName ?? ""}`}>{value}</p>
+    </div>
   );
 }

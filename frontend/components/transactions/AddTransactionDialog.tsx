@@ -46,10 +46,26 @@ export default function AddTransactionDialog({
 
   const [submitting, setSubmitting] = useState(false);
 
+  const normalizeAmount = (value: string) => value.replace(/[^\d.]/g, "");
+
+  const formatAmountForInput = (value: string) => {
+    if (!value) return "";
+    const [intPartRaw, decPartRaw] = value.split(".");
+    const intPart = intPartRaw.replace(/\D/g, "");
+    if (!intPart) return "";
+    const withCommas = new Intl.NumberFormat("en-NG").format(Number(intPart));
+    if (decPartRaw !== undefined) {
+      const decPart = decPartRaw.replace(/\D/g, "").slice(0, 2);
+      return decPart.length ? `${withCommas}.${decPart}` : `${withCommas}.`;
+    }
+    return withCommas;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const numAmount = parseFloat(amount);
+    const cleanedAmount = normalizeAmount(amount);
+    const numAmount = parseFloat(cleanedAmount);
     if (!numAmount || numAmount <= 0) {
       toast.error("Please enter a valid amount");
       return;
@@ -121,12 +137,15 @@ export default function AddTransactionDialog({
             <Label htmlFor="tx-amount">Amount (NGN)</Label>
             <Input
               id="tx-amount"
-              type="number"
-              min="0"
-              step="100"
+              type="text"
+              inputMode="decimal"
+              autoComplete="off"
               placeholder="0"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) => {
+                const raw = normalizeAmount(e.target.value);
+                setAmount(formatAmountForInput(raw));
+              }}
               className="text-lg font-display font-bold"
               required
             />

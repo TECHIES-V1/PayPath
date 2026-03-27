@@ -10,6 +10,7 @@ import EditProfileDialog from "@/components/settings/EditProfileDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuthStore } from "@/store/authStore";
 import { useThemeStore } from "@/store/themeStore";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -70,9 +71,12 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-4">
-                  <div className="size-16 rounded-2xl bg-primary/15 flex items-center justify-center text-primary text-xl font-display font-bold shrink-0">
+                <Avatar className="size-16 rounded-2xl" size="lg">
+                  <AvatarImage src={user?.avatarUrl || ""} alt={user?.name || "User"} />
+                  <AvatarFallback className="rounded-2xl bg-primary/15 text-primary text-xl font-display font-bold">
                     {user?.name?.charAt(0)?.toUpperCase() || "U"}
-                  </div>
+                  </AvatarFallback>
+                </Avatar>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-display font-bold text-lg truncate">{user?.name || "User"}</h3>
                     <p className="text-sm text-muted-foreground truncate">{user?.email || ""}</p>

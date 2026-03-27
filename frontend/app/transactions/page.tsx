@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import { toast } from "sonner";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Activity01Icon,
@@ -10,7 +9,6 @@ import {
   Briefcase01Icon,
   Bus01Icon,
   CreditCardIcon,
-  Delete01Icon,
   Invoice01Icon,
   MoneyReceive01Icon,
   Restaurant01Icon,
@@ -62,7 +60,7 @@ function formatDate(dateStr: string) {
 }
 
 export default function TransactionsPage() {
-  const { filter, setFilter, getFiltered, deleteTransaction, fetchTransactions, isLoading, error } = useTransactionStore();
+  const { filter, setFilter, getFiltered, fetchTransactions, isLoading, error } = useTransactionStore();
   const transactions = getFiltered();
   const [addOpen, setAddOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
@@ -71,44 +69,40 @@ export default function TransactionsPage() {
     fetchTransactions();
   }, [fetchTransactions]);
 
-  const handleDelete = async (tx: Transaction) => {
-    try {
-      await deleteTransaction(tx.id);
-      toast.success("Transaction deleted");
-
-      if (selectedTransaction?.id === tx.id) {
-        setSelectedTransaction(null);
-      }
-    } catch {
-      toast.error("Failed to delete transaction");
-    }
-  };
-
   const filters = ["all", "income", "expense"] as const;
 
   return (
     <AppShell>
       <Header title="Transactions" />
       <div className="space-y-5 px-2 py-4 md:p-6">
-        <div className="flex items-center gap-2">
-          {filters.map((value) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setFilter(value)}
-              className={`rounded-xl px-4 py-2 text-sm font-semibold capitalize transition-colors ${filter === value
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted/50 text-muted-foreground hover:bg-muted"
-                }`}
-            >
-              {value}
-            </button>
-          ))}
-          <div className="ml-auto">
+        <div className="space-y-3">
+          <div className="flex items-center justify-between md:hidden">
+            <h2 className="text-lg font-display font-bold">Transactions</h2>
             <Button size="sm" onClick={() => setAddOpen(true)}>
               <HugeiconsIcon icon={Add01Icon} className="size-3.5" />
               Add
             </Button>
+          </div>
+          <div className="hidden items-center justify-end md:flex">
+            <Button size="sm" onClick={() => setAddOpen(true)}>
+              <HugeiconsIcon icon={Add01Icon} className="size-3.5" />
+              Add
+            </Button>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {filters.map((value) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setFilter(value)}
+                className={`rounded-xl px-4 py-2 text-sm font-semibold capitalize transition-colors ${filter === value
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                  }`}
+              >
+                {value}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -199,18 +193,6 @@ export default function TransactionsPage() {
                       {tx.type === "income" ? "+" : "-"}
                       {formatCurrency(tx.amount)}
                     </span>
-
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        void handleDelete(tx);
-                      }}
-                      className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive"
-                      aria-label={`Delete ${tx.category} transaction`}
-                    >
-                      <HugeiconsIcon icon={Delete01Icon} className="size-3.5" />
-                    </button>
                   </motion.div>
                 );
               })}

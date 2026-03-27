@@ -87,3 +87,18 @@ export const getMe = async ( userId: string ) => {
 
     return user
 }
+
+export const updateProfile = async (userId: string, name: string) => {
+    const user = await prisma.user.update({
+        where: { id: userId },
+        data: { name },
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            createdAt: true
+        }
+    })
+
+    return user
+}

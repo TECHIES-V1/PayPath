@@ -82,7 +82,7 @@ export default function AddTransactionDialog({
         amount: numAmount,
         category,
         date: new Date().toISOString().split("T")[0],
-        note: note.trim() || undefined,
+        notes: note.trim() || undefined,
       });
       toast.success(`${type === "income" ? "Income" : "Expense"} added`);
       resetForm();

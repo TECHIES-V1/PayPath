@@ -53,10 +53,10 @@ export default function DashboardPage() {
         >
           {/* Greeting */}
           <motion.div variants={fadeUp}>
-            <h2 className="text-2xl font-display font-bold text-foreground">
+            <h2 className="text-xl md:text-2xl font-display font-bold text-foreground">
               Welcome back{user?.name ? `, ${user.name.split(" ")[0]}` : ""}
             </h2>
-            <p className="text-sm text-muted-foreground mt-1">{today}</p>
+            <p className="text-xs md:text-sm text-muted-foreground mt-1">{today}</p>
           </motion.div>
 
           {/* Hero balance card */}

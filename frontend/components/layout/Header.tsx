@@ -23,8 +23,6 @@ export default function Header({ title }: HeaderProps) {
           <h1 className="text-xl font-display font-bold text-foreground hidden md:block">{title}</h1>
         </div>
         <div className="flex items-center gap-3">
-          <h1 className="text-lg font-display font-bold text-foreground md:hidden">{title}</h1>
-
           <div className="relative">
             <button
               onClick={() => setShowNotif((v) => !v)}

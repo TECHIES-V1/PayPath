@@ -6,6 +6,7 @@ interface CreateTransactionData {
   type: string
   category: string
   date?: string
+  notes?: string
 }
 
 interface TransactionFilters {
@@ -25,6 +26,7 @@ export const create = async (userId: string, data: CreateTransactionData) => {
       type: data.type,
       category: data.category,
       date: data.date ? new Date(data.date) : new Date(),
+      notes: data.notes?.trim() ? data.notes.trim() : null,
     },
   })
   return transaction
@@ -76,6 +78,7 @@ export const update = async (userId: string, id: string, data: Partial<CreateTra
       ...(data.type && { type: data.type }),
       ...(data.category && { category: data.category }),
       ...(data.date && { date: new Date(data.date) }),
+      ...(data.notes !== undefined && { notes: data.notes.trim() ? data.notes.trim() : null }),
     },
   })
   return transaction

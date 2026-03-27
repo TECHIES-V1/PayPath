@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { toast } from "sonner";
 import LogoutConfirmDialog from "@/components/auth/LogoutConfirmDialog";
@@ -12,25 +12,15 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuthStore } from "@/store/authStore";
-import { useThemeStore } from "@/store/themeStore";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Edit01Icon,
-  Sun01Icon,
-  MoonIcon,
-  ComputerIcon,
   Notification01Icon,
   Mail01Icon,
   InformationCircleIcon,
   Logout03Icon,
   Delete01Icon,
 } from "@hugeicons/core-free-icons";
-
-const themes = [
-  { value: "light" as const, label: "Light", icon: Sun01Icon },
-  { value: "dark" as const, label: "Dark", icon: MoonIcon },
-  { value: "system" as const, label: "System", icon: ComputerIcon },
-];
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
@@ -39,10 +29,17 @@ const fadeUp = {
 
 export default function SettingsPage() {
   const user = useAuthStore((state) => state.user);
-  const { theme, setTheme } = useThemeStore();
   const [editOpen, setEditOpen] = useState(false);
-  const [pushNotif, setPushNotif] = useState(true);
-  const [emailNotif, setEmailNotif] = useState(false);
+  const [pushNotif, setPushNotif] = useState(() => {
+    if (typeof window === "undefined") return true;
+    const storedValue = localStorage.getItem("paypath_push_notifications");
+    return storedValue === null ? true : storedValue === "true";
+  });
+  const [emailNotif, setEmailNotif] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const storedValue = localStorage.getItem("paypath_email_notifications");
+    return storedValue === null ? false : storedValue === "true";
+  });
 
   const [logoutConfirm, setLogoutConfirm] = useState(false);
 
@@ -52,6 +49,14 @@ export default function SettingsPage() {
         year: "numeric",
       })
     : "—";
+
+  useEffect(() => {
+    localStorage.setItem("paypath_push_notifications", String(pushNotif));
+  }, [pushNotif]);
+
+  useEffect(() => {
+    localStorage.setItem("paypath_email_notifications", String(emailNotif));
+  }, [emailNotif]);
 
   return (
     <AppShell>
@@ -86,33 +91,6 @@ export default function SettingsPage() {
                     <HugeiconsIcon icon={Edit01Icon} className="size-3.5" />
                     Edit
                   </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Appearance */}
-          <motion.div variants={fadeUp}>
-            <Card>
-              <CardHeader>
-                <CardTitle>Appearance</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex gap-2">
-                  {themes.map((t) => (
-                    <button
-                      key={t.value}
-                      onClick={() => setTheme(t.value)}
-                      className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-medium transition-all cursor-pointer ${
-                        theme === t.value
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted/50 text-muted-foreground hover:bg-muted"
-                      }`}
-                    >
-                      <HugeiconsIcon icon={t.icon} className="size-4" />
-                      {t.label}
-                    </button>
-                  ))}
                 </div>
               </CardContent>
             </Card>

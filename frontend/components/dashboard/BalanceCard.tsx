@@ -8,6 +8,7 @@ import {
   ViewOffIcon,
   Add01Icon,
   Remove01Icon,
+  ArrowUpRight01Icon
 } from "@hugeicons/core-free-icons";
 import { useTransactionStore } from "@/store/transactionStore";
 import AddTransactionDialog from "@/components/transactions/AddTransactionDialog";

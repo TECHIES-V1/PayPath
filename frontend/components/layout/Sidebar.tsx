@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Home01Icon,
@@ -90,9 +91,12 @@ export default function Sidebar() {
         {/* User section */}
         <div className="p-4 border-t border-sidebar-border space-y-3">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-primary/15 flex items-center justify-center text-primary text-sm font-bold">
-              {user?.name?.charAt(0)?.toUpperCase() || "U"}
-            </div>
+            <Avatar className="size-10 rounded-xl">
+              <AvatarImage src={user?.avatarUrl || ""} alt={user?.name || "User"} />
+              <AvatarFallback className="rounded-xl bg-primary/15 text-primary text-sm font-bold">
+                {user?.name?.charAt(0)?.toUpperCase() || "U"}
+              </AvatarFallback>
+            </Avatar>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-sidebar-foreground truncate">
                 {user?.name || "User"}

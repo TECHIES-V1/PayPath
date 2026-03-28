@@ -11,29 +11,77 @@ export interface AppNotification {
 
 interface NotificationState {
   notifications: AppNotification[];
+  hydrate: () => void;
   addNotification: (n: Omit<AppNotification, "id" | "read" | "createdAt">) => void;
   markAllRead: () => void;
   clearAll: () => void;
   unreadCount: () => number;
 }
 
+const NOTIFICATIONS_KEY = "paypath_notifications";
+const PUSH_NOTIFICATIONS_KEY = "paypath_push_notifications";
+
+function saveNotifications(notifications: AppNotification[]) {
+  if (typeof window === "undefined") return;
+
+  localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications));
+}
+
+function loadNotifications(): AppNotification[] {
+  if (typeof window === "undefined") return [];
+
+  try {
+    const stored = localStorage.getItem(NOTIFICATIONS_KEY);
+    if (!stored) return [];
+
+    const parsed = JSON.parse(stored) as Array<Omit<AppNotification, "createdAt"> & { createdAt: string }>;
+    return parsed.map((notification) => ({
+      ...notification,
+      createdAt: new Date(notification.createdAt),
+    }));
+  } catch {
+    return [];
+  }
+}
+
+function isPushNotificationsEnabled() {
+  if (typeof window === "undefined") return true;
+
+  const stored = localStorage.getItem(PUSH_NOTIFICATIONS_KEY);
+  return stored === null ? true : stored === "true";
+}
+
 export const useNotificationStore = create<NotificationState>((set, get) => ({
   notifications: [],
 
-  addNotification: (n) =>
-    set((state) => ({
-      notifications: [
+  hydrate: () => {
+    set({ notifications: loadNotifications() });
+  },
+
+  addNotification: (n) => {
+    if (!isPushNotificationsEnabled()) return;
+
+    set((state) => {
+      const notifications = [
         { ...n, id: crypto.randomUUID(), read: false, createdAt: new Date() },
         ...state.notifications,
-      ],
-    })),
+      ];
+      saveNotifications(notifications);
+      return { notifications };
+    });
+  },
 
   markAllRead: () =>
-    set((state) => ({
-      notifications: state.notifications.map((n) => ({ ...n, read: true })),
-    })),
+    set((state) => {
+      const notifications = state.notifications.map((n) => ({ ...n, read: true }));
+      saveNotifications(notifications);
+      return { notifications };
+    }),
 
-  clearAll: () => set({ notifications: [] }),
+  clearAll: () => {
+    saveNotifications([]);
+    set({ notifications: [] });
+  },
 
   unreadCount: () => get().notifications.filter((n) => !n.read).length,
 }));

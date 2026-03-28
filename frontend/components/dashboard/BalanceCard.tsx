@@ -49,12 +49,21 @@ function useCountUp(target: number, duration = 800) {
 }
 
 export default function BalanceCard() {
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(() => {
+    if (typeof window === "undefined") return true;
+
+    const stored = localStorage.getItem("paypath_balance_visible");
+    return stored === null ? true : stored === "true";
+  });
   const [addOpen, setAddOpen] = useState(false);
   const [addType, setAddType] = useState<"income" | "expense">("income");
   const { getTotals, isLoading } = useTransactionStore();
   const { balance, income, expense } = getTotals();
   const animatedBalance = useCountUp(balance);
+
+  useEffect(() => {
+    localStorage.setItem("paypath_balance_visible", String(visible));
+  }, [visible]);
 
   const openAdd = (type: "income" | "expense") => {
     setAddType(type);
@@ -75,7 +84,7 @@ export default function BalanceCard() {
             <p className="text-xs font-medium text-white/40 uppercase tracking-wider">Total Balance</p>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setVisible(!visible)}
+                onClick={() => setVisible((current) => !current)}
                 className="size-8 rounded-xl bg-white/[0.06] flex items-center justify-center hover:bg-white/10 transition-colors"
               >
                 <HugeiconsIcon icon={visible ? ViewIcon : ViewOffIcon} className="size-4 text-white/50" />

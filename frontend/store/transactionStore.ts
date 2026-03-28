@@ -66,8 +66,9 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
             type: "warning",
           })
         );
-    } catch (e: any) {
-      set({ isLoading: false, error: e?.message || "Failed to load transactions" });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to load transactions";
+      set({ isLoading: false, error: message });
     }
   },
 

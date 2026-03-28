@@ -7,6 +7,7 @@ import AppShell from "@/components/layout/AppShell";
 import Header from "@/components/layout/Header";
 import AddGoalDialog from "@/components/goals/AddGoalDialog";
 import EditGoalDialog from "@/components/goals/EditGoalDialog";
+import ContributeGoalDialog from "@/components/goals/ContributeGoalDialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -53,24 +54,15 @@ function isGoalOverdue(goal: Goal) {
 }
 
 export default function GoalsPage() {
-  const { goals, addFunds, deleteGoal, fetchGoals, isLoading, error } = useGoalStore();
+  const { goals, deleteGoal, fetchGoals, isLoading, error } = useGoalStore();
   const [addOpen, setAddOpen] = useState(false);
   const [editGoal, setEditGoal] = useState<Goal | null>(null);
+  const [contributeGoal, setContributeGoal] = useState<Goal | null>(null);
   const [deleteGoalTarget, setDeleteGoalTarget] = useState<Goal | null>(null);
 
   useEffect(() => {
     fetchGoals();
   }, [fetchGoals]);
-
-  const handleAddFunds = async (goal: Goal) => {
-    const amount = Math.round(goal.targetAmount * 0.1);
-    try {
-      await addFunds(goal.id, amount);
-      toast.success(`Added ${formatCurrency(amount)} to ${goal.name}`);
-    } catch {
-      toast.error("Failed to add funds");
-    }
-  };
 
   const handleDeleteGoal = async (goal: Goal) => {
     try {
@@ -157,11 +149,22 @@ export default function GoalsPage() {
           </motion.div>
         ) : (
           /* Goal cards */
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
             {goals.map((goal, i) => {
-              const percentage = Math.round((goal.currentAmount / goal.targetAmount) * 100);
+              const percentage = goal.progress ?? Math.round((goal.currentAmount / goal.targetAmount) * 100);
               const isComplete = percentage >= 100;
               const isOverdue = isGoalOverdue(goal);
+              const statusLabel = isComplete ? "Done" : isOverdue ? "Overdue" : "Ongoing";
+              const statusClassName = isComplete
+                ? "bg-primary/10 text-primary"
+                : isOverdue
+                  ? "bg-destructive/10 text-destructive"
+                  : "bg-muted text-muted-foreground";
+              const progressClassName = isOverdue
+                ? "h-3 rounded-full [&_[data-slot=progress-indicator]]:bg-destructive"
+                : isComplete
+                  ? "h-3 rounded-full [&_[data-slot=progress-indicator]]:bg-primary"
+                  : "h-3 rounded-full [&_[data-slot=progress-indicator]]:bg-muted-foreground";
 
               return (
                 <motion.div
@@ -182,25 +185,25 @@ export default function GoalsPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
-                            <div className="flex min-w-0 items-center gap-2">
+                          <div className="flex min-w-0 items-center gap-2">
                               <h3 className="truncate font-display text-sm font-bold">{goal.name}</h3>
-                              <button
-                                type="button"
-                                onClick={() => setEditGoal(goal)}
-                                className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                                aria-label={`Edit ${goal.name}`}
-                              >
-                                <HugeiconsIcon icon={Edit01Icon} className="size-3.5" />
-                              </button>
+                              {!isComplete && (
+                                <button
+                                  type="button"
+                                  onClick={() => setEditGoal(goal)}
+                                  className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                                  aria-label={`Edit ${goal.name}`}
+                                >
+                                  <HugeiconsIcon icon={Edit01Icon} className="size-3.5" />
+                                </button>
+                              )}
                             </div>
                             <div className="ml-2 flex items-center gap-2">
-                              {isOverdue && (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-destructive">
-                                  <HugeiconsIcon icon={Alert02Icon} className="size-3" />
-                                  Overdue
-                                </span>
-                              )}
-                              <span className={`text-xs font-display font-bold ${isOverdue ? "text-destructive" : "text-primary"}`}>
+                              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-wide ${statusClassName}`}>
+                                {isOverdue && <HugeiconsIcon icon={Alert02Icon} className="size-3" />}
+                                {statusLabel}
+                              </span>
+                              <span className={`text-xs font-display font-bold ${isOverdue ? "text-destructive" : isComplete ? "text-primary" : "text-muted-foreground"}`}>
                                 {percentage}%
                               </span>
                             </div>
@@ -211,10 +214,7 @@ export default function GoalsPage() {
                         </div>
                       </div>
 
-                      <Progress
-                        value={percentage}
-                        className={isOverdue ? "h-3 rounded-full [&_[data-slot=progress-indicator]]:bg-destructive" : "h-3 rounded-full"}
-                      />
+                      <Progress value={percentage} className={progressClassName} />
 
                       <div className="flex items-center justify-between">
                         <div className="text-xs text-muted-foreground">
@@ -226,7 +226,7 @@ export default function GoalsPage() {
                             <Button
                               size="xs"
                               variant="outline"
-                              onClick={() => handleAddFunds(goal)}
+                              onClick={() => setContributeGoal(goal)}
                             >
                               <HugeiconsIcon icon={DollarCircleIcon} className="size-3" />
                               Add funds
@@ -247,20 +247,18 @@ export default function GoalsPage() {
                 </motion.div>
               );
             })}
-
-            {/* Add new goal */}
-            <button
-              onClick={() => setAddOpen(true)}
-              className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-primary/20 hover:border-primary/40 hover:bg-primary/5 text-primary rounded-2xl py-4 text-sm font-medium transition-all"
-            >
-              <HugeiconsIcon icon={Add01Icon} className="size-4" />
-              New Goal
-            </button>
           </div>
         )}
       </div>
 
       <AddGoalDialog open={addOpen} onOpenChange={setAddOpen} />
+      <ContributeGoalDialog
+        goal={contributeGoal}
+        open={contributeGoal !== null}
+        onOpenChange={(open) => {
+          if (!open) setContributeGoal(null);
+        }}
+      />
       <EditGoalDialog
         goal={editGoal}
         open={editGoal !== null}

@@ -1,9 +1,9 @@
-import { Request, Response } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import * as authService from '../services/auth.service'
-import { registerSchema, loginSchema } from '../validators/auth.validator'
+import { registerSchema, loginSchema, updateProfileSchema } from '../validators/auth.validator'
 import { AuthRequest } from '../middlewares/auth.middleware'
 
-export const register = async (req: Request, res: Response) => {
+export const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const parsed = registerSchema.safeParse(req.body)
     if (!parsed.success) {
@@ -27,12 +27,12 @@ export const register = async (req: Request, res: Response) => {
       token: result.token,
     })
   } catch (error: any) {
-    const status = error.message === 'User already exists' ? 409 : 400
-    res.status(status).json({ message: error.message })
+    res.status(error.message === 'User already exists' ? 409 : 400)
+    next(error)
   }
 }
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const parsed = loginSchema.safeParse(req.body)
     if (!parsed.success) {
@@ -56,16 +56,37 @@ export const login = async (req: Request, res: Response) => {
       token: result.token,
     })
   } catch (error: any) {
-    res.status(401).json({ message: error.message })
+    res.status(401)
+    next(error)
   }
 }
 
-export const getMe = async (req: AuthRequest, res: Response) => {
+export const getMe = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = req.user!.id
     const user = await authService.getMe(userId)
     res.status(200).json({ user })
   } catch (error: any) {
-    res.status(404).json({ message: error.message })
+    res.status(404)
+    next(error)
   }
+}
+
+export const updateProfile = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const parsed = updateProfileSchema.safeParse(req.body)
+    if (!parsed.success) {
+      return res.status(400).json({ message: parsed.error.issues[0].message })
+    }
+
+    const user = await authService.updateProfile(req.user!.id, parsed.data.name.trim())
+    res.status(200).json({ message: 'Profile updated', user })
+  } catch (error: any) {
+    res.status(400)
+    next(error)
+  }
+}
+
+export const updateAvatarPlaceholder = async (_req: AuthRequest, res: Response) => {
+  res.status(501).json({ message: 'Profile photo upload is not implemented yet' })
 }

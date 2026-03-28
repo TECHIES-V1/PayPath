@@ -41,6 +41,7 @@ export const calculateScore = async (userId: string) => {
     }
   }
   const savingsStreak = Math.min(30, daysWithSavings.size)
+  const completedGoals = goals.filter((goal) => Number(goal.currentAmount) >= Number(goal.targetAmount))
 
   // Budget adherence: income > expense ratio (max 100%)
   let totalIncome = 0
@@ -90,7 +91,16 @@ export const calculateScore = async (userId: string) => {
     },
   })
 
-  return { score: clampedScore, tier, badges, savingsStreak, budgetAdherence, incomeConsistency }
+  return {
+    score: clampedScore,
+    tier,
+    badges,
+    savingsStreak,
+    budgetAdherence,
+    incomeConsistency,
+    completedGoalsCount: completedGoals.length,
+    hasCompletedGoal: completedGoals.length > 0,
+  }
 }
 
 export const getPassport = async (userId: string) => {

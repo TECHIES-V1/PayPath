@@ -17,6 +17,7 @@ export interface Goal {
   currentAmount: number;
   deadline: string;
   progress?: number;
+  isComplete?: boolean;
 }
 
 interface GoalState {
@@ -46,10 +47,12 @@ export const useGoalStore = create<GoalState>((set) => ({
         currentAmount: Number(g.currentAmount),
         deadline: g.deadline?.split("T")[0] || g.deadline,
         progress: g.progress || 0,
+        isComplete: Number(g.currentAmount) >= Number(g.targetAmount),
       }));
       set({ goals, isLoading: false });
-    } catch (e: any) {
-      set({ isLoading: false, error: e?.message || "Failed to load goals" });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to load goals";
+      set({ isLoading: false, error: message });
     }
   },
 
@@ -67,8 +70,9 @@ export const useGoalStore = create<GoalState>((set) => ({
         currentAmount: Number(res.goal.currentAmount),
         deadline: res.goal.deadline?.split("T")[0] || res.goal.deadline,
         progress: 0,
+        isComplete: false,
       };
-      set((state) => ({ goals: [...state.goals, goal] }));
+      set((state) => ({ goals: [goal, ...state.goals] }));
     } catch (error) {
       throw error;
     }
@@ -90,6 +94,7 @@ export const useGoalStore = create<GoalState>((set) => ({
         currentAmount: Number(res.goal.currentAmount),
         deadline: res.goal.deadline?.split("T")[0] || res.goal.deadline,
         progress: res.goal.progress || 0,
+        isComplete: Number(res.goal.currentAmount) >= Number(res.goal.targetAmount),
       };
 
       set((state) => ({
@@ -112,7 +117,12 @@ export const useGoalStore = create<GoalState>((set) => ({
     set((state) => {
       const updated = state.goals.map((g) =>
         g.id === id
-          ? { ...g, currentAmount: Number(res.goal.currentAmount), progress: res.goal.progress || 0 }
+          ? {
+              ...g,
+              currentAmount: Number(res.goal.currentAmount),
+              progress: res.goal.progress || 0,
+              isComplete: Number(res.goal.currentAmount) >= Number(res.goal.targetAmount),
+            }
           : g
       );
       // Notify if goal completed

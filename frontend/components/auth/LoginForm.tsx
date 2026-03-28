@@ -33,10 +33,10 @@ export default function LoginForm() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay: 0.15 }}
     >
-      <div className="bg-card rounded-3xl p-8 shadow-card dark:shadow-none dark:border dark:border-white/[0.06]">
+      <div className="bg-card rounded-2xl px-4 py-6 md:p-8 shadow-card dark:shadow-none dark:border dark:border-white/[0.06]">
         <div className="space-y-2 mb-8">
-          <h2 className="text-2xl font-display font-bold">Welcome back</h2>
-          <p className="text-sm text-muted-foreground">Sign in to your PayPath account</p>
+          <h2 className="text-xl md:text-2xl font-display font-bold">Welcome back</h2>
+          <p className="text-xs md:text-sm text-muted-foreground">Sign in to your PayPath account</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -68,7 +68,6 @@ export default function LoginForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                autoComplete="email"
                 className="pl-11"
               />
             </div>
@@ -85,13 +84,12 @@ export default function LoginForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                autoComplete="current-password"
                 className="pl-11"
               />
             </div>
           </div>
 
-          <Button type="submit" size="lg" className="w-full rounded-xl" disabled={isLoading}>
+          <Button type="submit" size="lg" className="w-full rounded-xl text-sm" disabled={isLoading}>
             {isLoading ? "Signing in..." : "Sign in"}
           </Button>
 
@@ -102,7 +100,7 @@ export default function LoginForm() {
             <span className="relative bg-card px-3 text-xs text-muted-foreground">or</span>
           </div>
 
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-center text-xs md:text-sm text-muted-foreground">
             Don&apos;t have an account?{" "}
             <Link href="/register" className="font-semibold text-primary hover:underline underline-offset-2">
               Sign up

@@ -52,6 +52,9 @@ export const getById = async (userId: string, id: string) => {
 export const update = async (userId: string, id: string, data: Partial<CreateGoalData>) => {
   const existing = await prisma.goal.findFirst({ where: { id, userId } })
   if (!existing) throw new Error('Goal not found')
+  if (data.targetAmount !== undefined && data.targetAmount < Number(existing.currentAmount)) {
+    throw new Error('Target amount cannot be lower than the amount already contributed')
+  }
 
   const goal = await prisma.goal.update({
     where: { id },
@@ -61,7 +64,14 @@ export const update = async (userId: string, id: string, data: Partial<CreateGoa
       ...(data.deadline && { deadline: new Date(data.deadline) }),
     },
   })
-  return goal
+  return {
+    ...goal,
+    targetAmount: Number(goal.targetAmount),
+    currentAmount: Number(goal.currentAmount),
+    progress: Number(goal.targetAmount) > 0
+      ? Math.min(100, Math.round((Number(goal.currentAmount) / Number(goal.targetAmount)) * 100))
+      : 0,
+  }
 }
 
 export const remove = async (userId: string, id: string) => {
@@ -77,6 +87,10 @@ export const contribute = async (userId: string, id: string, amount: number) => 
   if (!existing) throw new Error('Goal not found')
 
   const newAmount = Number(existing.currentAmount) + amount
+  if (newAmount > Number(existing.targetAmount)) {
+    throw new Error('Contribution cannot exceed the goal target')
+  }
+
   const goal = await prisma.goal.update({
     where: { id },
     data: { currentAmount: new Prisma.Decimal(newAmount) },

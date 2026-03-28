@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { apiPost, apiGet, setToken, getToken } from "@/lib/api";
+import { apiPost, apiGet, apiPut, setToken, getToken } from "@/lib/api";
 
 interface User {
   id: string;
@@ -18,22 +18,8 @@ interface AuthState {
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   fetchUser: () => Promise<void>;
-  updateUser: (data: Partial<Pick<User, "name" | "email" | "avatarUrl">>) => void;
+  updateUser: (data: Pick<User, "name">) => Promise<void>;
   clearError: () => void;
-}
-
-const PROFILE_KEY = "paypath_profile_overrides";
-
-function saveOverrides(data: Partial<Pick<User, "name" | "email" | "avatarUrl">>) {
-  localStorage.setItem(PROFILE_KEY, JSON.stringify(data));
-}
-
-function loadOverrides(): Partial<Pick<User, "name" | "email" | "avatarUrl">> {
-  try {
-    return JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}");
-  } catch {
-    return {};
-  }
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -50,7 +36,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         password,
       });
       setToken(data.token);
-      set({ user: { ...data.user, ...loadOverrides() }, isAuthenticated: true, isLoading: false });
+      set({ user: data.user, isAuthenticated: true, isLoading: false });
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Login failed";
       set({ error: message, isLoading: false });
@@ -89,18 +75,16 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true });
     try {
       const data = await apiGet<{ user: User }>("/auth/me");
-      set({ user: { ...data.user, ...loadOverrides() }, isAuthenticated: true, isLoading: false });
+      set({ user: data.user, isAuthenticated: true, isLoading: false });
     } catch {
       setToken(null);
       set({ user: null, isAuthenticated: false, isLoading: false });
     }
   },
 
-  updateUser: (data) => {
-    saveOverrides(data);
-    set((state) => ({
-      user: state.user ? { ...state.user, ...data } : null,
-    }));
+  updateUser: async (data) => {
+    const res = await apiPut<{ user: User }>("/auth/profile", data);
+    set({ user: res.user });
   },
 
   clearError: () => set({ error: null }),

@@ -3,21 +3,21 @@
 import { useEffect } from "react";
 import { Toaster } from "sonner";
 import { useThemeStore } from "@/store/themeStore";
+import { useNotificationStore } from "@/store/notificationStore";
 
 export function ThemeProvider() {
   const initTheme = useThemeStore((s) => s.initTheme);
-  const theme = useThemeStore((s) => s.theme);
+  const hydrateNotifications = useNotificationStore((s) => s.hydrate);
 
   useEffect(() => {
     initTheme();
-  }, [initTheme]);
-
-  const toasterTheme = theme === "system" ? "system" : theme;
+    hydrateNotifications();
+  }, [hydrateNotifications, initTheme]);
 
   return (
     <Toaster
       position="top-right"
-      theme={toasterTheme}
+      theme="dark"
       richColors
       toastOptions={{
         className: "font-body",

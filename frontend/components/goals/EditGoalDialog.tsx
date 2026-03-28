@@ -6,6 +6,7 @@ import { useGoalStore, type Goal } from "@/store/goalStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { formatDecimalInput, parseDecimalInput } from "@/lib/number";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +24,7 @@ interface EditGoalDialogProps {
 
 export default function EditGoalDialog({ goal, open, onOpenChange }: EditGoalDialogProps) {
   const updateGoal = useGoalStore((state) => state.updateGoal);
+  const fetchGoals = useGoalStore((state) => state.fetchGoals);
   const [name, setName] = useState("");
   const [target, setTarget] = useState("");
   const [deadline, setDeadline] = useState("");
@@ -32,7 +34,7 @@ export default function EditGoalDialog({ goal, open, onOpenChange }: EditGoalDia
     if (!goal) return;
 
     setName(goal.name);
-    setTarget(String(goal.targetAmount));
+    setTarget(formatDecimalInput(String(goal.targetAmount)));
     setDeadline(goal.deadline);
   }, [goal]);
 
@@ -52,9 +54,13 @@ export default function EditGoalDialog({ goal, open, onOpenChange }: EditGoalDia
       return;
     }
 
-    const numTarget = parseFloat(target);
-    if (!numTarget || numTarget <= 0) {
+    const numTarget = parseDecimalInput(target);
+    if (!Number.isFinite(numTarget) || numTarget <= 0) {
       toast.error("Please enter a valid target amount");
+      return;
+    }
+    if (numTarget < goal.currentAmount) {
+      toast.error("Target amount cannot be lower than the amount already contributed");
       return;
     }
 
@@ -70,11 +76,13 @@ export default function EditGoalDialog({ goal, open, onOpenChange }: EditGoalDia
         targetAmount: numTarget,
         deadline,
       });
+      await fetchGoals();
       toast.success("Goal updated");
       onOpenChange(false);
       resetState();
-    } catch {
-      toast.error("Failed to update goal");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to update goal right now.";
+      toast.error(message);
     } finally {
       setSaving(false);
     }
@@ -111,14 +119,19 @@ export default function EditGoalDialog({ goal, open, onOpenChange }: EditGoalDia
             <Label htmlFor="edit-goal-target">Target amount (NGN)</Label>
             <Input
               id="edit-goal-target"
-              type="number"
-              min="0"
-              step="1000"
+              type="text"
+              inputMode="decimal"
               value={target}
-              onChange={(event) => setTarget(event.target.value)}
+              onChange={(event) => setTarget(formatDecimalInput(event.target.value))}
+              placeholder={`${goal?.currentAmount ?? 0}`}
               className="text-lg font-display font-bold"
               required
             />
+            {goal && (
+              <p className="text-xs text-muted-foreground">
+                Minimum allowed: {goal.currentAmount.toLocaleString("en-NG", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">

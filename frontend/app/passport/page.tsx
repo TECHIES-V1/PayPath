@@ -23,6 +23,8 @@ interface PassportData {
   savingsStreak: number;
   budgetAdherence: number;
   incomeConsistency: number;
+  hasCompletedGoal: boolean;
+  completedGoalsCount: number;
 }
 
 interface BreakdownFactor {
@@ -33,10 +35,13 @@ interface BreakdownFactor {
 }
 
 const badgeConfig = [
-  { name: "Saver", icon: DollarCircleIcon },
-  { name: "Budgeter", icon: CreditCardIcon },
-  { name: "Investor", icon: Award01Icon },
+  { name: "Starter", icon: DollarCircleIcon },
+  { name: "Builder", icon: CreditCardIcon },
+  { name: "Stable", icon: Award01Icon },
+  { name: "Trusted", icon: CheckmarkCircle01Icon },
 ];
+
+const tierOrder = badgeConfig.map((badge) => badge.name);
 
 export default function PassportPage() {
   const [passport, setPassport] = useState<PassportData | null>(null);
@@ -64,6 +69,7 @@ export default function PassportPage() {
   const score = passport?.score ?? 0;
   const tier = passport?.tier ?? "Starter";
   const earnedBadges = passport?.badges ?? [];
+  const hasCompletedGoal = passport?.hasCompletedGoal ?? false;
   const circumference = 2 * Math.PI * 78;
   const dashOffset = circumference * (1 - score / 100);
 
@@ -72,7 +78,7 @@ export default function PassportPage() {
     { label: "Log 10 transactions", done: earnedBadges.includes("Logger") },
     { label: "Chat with AI Coach", done: score > 20 },
     { label: "Maintain a budget for 30 days", done: earnedBadges.includes("Streak Master") },
-    { label: "Reach your first goal", done: earnedBadges.includes("Trusted") },
+    { label: "Reach your first goal", done: hasCompletedGoal },
   ];
 
   return (
@@ -169,7 +175,9 @@ export default function PassportPage() {
           className="flex justify-center gap-6"
         >
           {badgeConfig.map((badge) => {
-            const isEarned = earnedBadges.includes(badge.name);
+            const currentTierIndex = tierOrder.indexOf(tier);
+            const badgeTierIndex = tierOrder.indexOf(badge.name);
+            const isEarned = currentTierIndex >= badgeTierIndex;
             return (
               <div key={badge.name} className="flex flex-col items-center gap-2">
                 <div className={`size-16 rounded-2xl flex items-center justify-center relative ${

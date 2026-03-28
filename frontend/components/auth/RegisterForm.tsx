@@ -76,10 +76,10 @@ export default function RegisterForm() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay: 0.15 }}
     >
-      <div className="bg-card rounded-3xl p-8 shadow-card dark:shadow-none dark:border dark:border-white/[0.06]">
+      <div className="bg-card rounded-2xl px-4 py-6 md:p-8 shadow-card dark:shadow-none dark:border dark:border-white/[0.06]">
         <div className="space-y-2 mb-8">
-          <h2 className="text-2xl font-display font-bold">Create your account</h2>
-          <p className="text-sm text-muted-foreground">Start your financial journey with PayPath</p>
+          <h2 className="text-xl md:text-2xl font-display font-bold">Create your account</h2>
+          <p className="text-xs md:text-sm text-muted-foreground">Start your financial journey with PayPath</p>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -117,7 +117,6 @@ export default function RegisterForm() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  autoComplete="name"
                   className="pl-11"
                 />
               </div>
@@ -134,7 +133,6 @@ export default function RegisterForm() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  autoComplete="email"
                   className="pl-11"
                 />
               </div>
@@ -151,7 +149,6 @@ export default function RegisterForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  autoComplete="new-password"
                   className="pl-11"
                 />
               </div>
@@ -161,9 +158,8 @@ export default function RegisterForm() {
                     {[0, 1, 2, 3].map((i) => (
                       <div
                         key={i}
-                        className={`h-1 flex-1 rounded-full transition-colors ${
-                          i < strength ? strengthColors[strength - 1] : "bg-muted"
-                        }`}
+                        className={`h-1 flex-1 rounded-full transition-colors ${i < strength ? strengthColors[strength - 1] : "bg-muted"
+                          }`}
                       />
                     ))}
                   </div>
@@ -185,14 +181,13 @@ export default function RegisterForm() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                  autoComplete="new-password"
                   className="pl-11"
                 />
               </div>
             </motion.div>
 
             <motion.div variants={itemVariants}>
-              <Button type="submit" size="lg" className="w-full rounded-xl" disabled={isLoading}>
+              <Button type="submit" size="lg" className="w-full rounded-xl text-sm" disabled={isLoading}>
                 {isLoading ? "Creating account..." : "Create account"}
               </Button>
             </motion.div>
@@ -204,7 +199,7 @@ export default function RegisterForm() {
               <span className="relative bg-card px-3 text-xs text-muted-foreground">or</span>
             </motion.div>
 
-            <motion.p variants={itemVariants} className="text-center text-sm text-muted-foreground">
+            <motion.p variants={itemVariants} className="text-center text-xs md:text-sm text-muted-foreground">
               Already have an account?{" "}
               <Link href="/login" className="font-semibold text-primary hover:underline underline-offset-2">
                 Sign in

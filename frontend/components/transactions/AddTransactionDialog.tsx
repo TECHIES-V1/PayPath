@@ -6,6 +6,7 @@ import { useTransactionStore } from "@/store/transactionStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { formatDecimalInput, parseDecimalInput } from "@/lib/number";
 import {
   Dialog,
   DialogContent,
@@ -46,27 +47,11 @@ export default function AddTransactionDialog({
 
   const [submitting, setSubmitting] = useState(false);
 
-  const normalizeAmount = (value: string) => value.replace(/[^\d.]/g, "");
-
-  const formatAmountForInput = (value: string) => {
-    if (!value) return "";
-    const [intPartRaw, decPartRaw] = value.split(".");
-    const intPart = intPartRaw.replace(/\D/g, "");
-    if (!intPart) return "";
-    const withCommas = new Intl.NumberFormat("en-NG").format(Number(intPart));
-    if (decPartRaw !== undefined) {
-      const decPart = decPartRaw.replace(/\D/g, "").slice(0, 2);
-      return decPart.length ? `${withCommas}.${decPart}` : `${withCommas}.`;
-    }
-    return withCommas;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const cleanedAmount = normalizeAmount(amount);
-    const numAmount = parseFloat(cleanedAmount);
-    if (!numAmount || numAmount <= 0) {
+    const numAmount = parseDecimalInput(amount);
+    if (!Number.isFinite(numAmount) || numAmount <= 0) {
       toast.error("Please enter a valid amount");
       return;
     }
@@ -143,8 +128,7 @@ export default function AddTransactionDialog({
               placeholder="0"
               value={amount}
               onChange={(e) => {
-                const raw = normalizeAmount(e.target.value);
-                setAmount(formatAmountForInput(raw));
+                setAmount(formatDecimalInput(e.target.value));
               }}
               className="text-lg font-display font-bold"
               required

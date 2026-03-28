@@ -24,16 +24,13 @@ interface EditProfileDialogProps {
 export default function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps) {
   const { user, updateUser } = useAuthStore();
   const [name, setName] = useState(user?.name || "");
-  const [email, setEmail] = useState(user?.email || "");
-  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(user?.avatarUrl);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (open) {
       setName(user?.name || "");
-      setEmail(user?.email || "");
-      setAvatarUrl(user?.avatarUrl);
     }
-  }, [open, user?.name, user?.email, user?.avatarUrl]);
+  }, [open, user?.name]);
 
   const handleAvatarChange = (file: File | null) => {
     if (!file) return;
@@ -45,26 +42,25 @@ export default function EditProfileDialog({ open, onOpenChange }: EditProfileDia
       toast.error("Image must be under 2MB");
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      setAvatarUrl(typeof reader.result === "string" ? reader.result : undefined);
-    };
-    reader.onerror = () => toast.error("Failed to read image");
-    reader.readAsDataURL(file);
+    toast.info("Profile photo upload is coming soon");
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name.trim()) {
       toast.error("Name cannot be empty");
       return;
     }
-    if (!email.trim() || !email.includes("@")) {
-      toast.error("Please enter a valid email");
-      return;
+    setSaving(true);
+    try {
+      await updateUser({ name: name.trim() });
+      toast.success("Profile updated");
+      onOpenChange(false);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to update profile";
+      toast.error(message);
+    } finally {
+      setSaving(false);
     }
-    updateUser({ name: name.trim(), email: email.trim(), avatarUrl });
-    toast.success("Profile updated");
-    onOpenChange(false);
   };
 
   return (
@@ -77,7 +73,7 @@ export default function EditProfileDialog({ open, onOpenChange }: EditProfileDia
         <div className="space-y-4 py-2">
           <div className="flex items-center gap-4">
             <Avatar className="size-16 rounded-2xl">
-              <AvatarImage src={avatarUrl || ""} alt={name || "User"} />
+              <AvatarImage src={user?.avatarUrl || ""} alt={name || "User"} />
               <AvatarFallback className="rounded-2xl bg-primary/15 text-primary text-xl font-display font-bold">
                 {name?.charAt(0)?.toUpperCase() || "U"}
               </AvatarFallback>
@@ -90,6 +86,7 @@ export default function EditProfileDialog({ open, onOpenChange }: EditProfileDia
                 accept="image/*"
                 onChange={(e) => handleAvatarChange(e.target.files?.[0] || null)}
               />
+              <p className="text-xs text-muted-foreground">Photo upload is not available yet.</p>
             </div>
           </div>
           <div className="space-y-2">
@@ -99,6 +96,7 @@ export default function EditProfileDialog({ open, onOpenChange }: EditProfileDia
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Your name"
+              disabled={saving}
             />
           </div>
           <div className="space-y-2">
@@ -106,17 +104,17 @@ export default function EditProfileDialog({ open, onOpenChange }: EditProfileDia
             <Input
               id="edit-email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              value={user?.email || ""}
+              readOnly
+              disabled
             />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" disabled={saving} onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave}>Save changes</Button>
+          <Button disabled={saving} onClick={() => void handleSave()}>{saving ? "Saving..." : "Save changes"}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

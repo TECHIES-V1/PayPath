@@ -187,7 +187,7 @@ export default function TransactionsPage() {
                     </div>
 
                     <span
-                      className={`text-xs font-display font-bold tabular-nums ${tx.type === "income" ? "text-primary" : "text-foreground"
+                      className={`text-xs font-display font-bold tabular-nums ${tx.type === "income" ? "text-primary" : "text-destructive"
                         }`}
                     >
                       {tx.type === "income" ? "+" : "-"}

@@ -21,20 +21,23 @@ function formatCurrency(amount: number) {
   }).format(amount);
 }
 
-function formatHiddenAmount() {
-  return "****";
-}
+const HIDDEN_AMOUNT = "******";
 
 function useCountUp(target: number, duration = 800) {
-  const [value, setValue] = useState(0);
+  const [value, setValue] = useState(target);
+  const prevTarget = useRef(target);
   const ref = useRef<number | null>(null);
 
   useEffect(() => {
+    const from = prevTarget.current;
+    prevTarget.current = target;
+    if (from === target) return;
+
     const start = performance.now();
     const animate = (now: number) => {
       const progress = Math.min((now - start) / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
-      setValue(Math.round(eased * target));
+      setValue(Math.round(from + eased * (target - from)));
       if (progress < 1) {
         ref.current = requestAnimationFrame(animate);
       }
@@ -85,11 +88,12 @@ export default function BalanceCard() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setVisible((current) => !current)}
+                aria-label={visible ? "Hide balance" : "Show balance"}
                 className="size-8 rounded-xl bg-white/[0.06] flex items-center justify-center hover:bg-white/10 transition-colors"
               >
                 <HugeiconsIcon icon={visible ? ViewIcon : ViewOffIcon} className="size-4 text-white/50" />
               </button>
-              <Link href="/transactions" className="size-8 rounded-xl bg-primary flex items-center justify-center hover:bg-primary/85 transition-colors">
+              <Link href="/transactions" aria-label="View all transactions" className="size-8 rounded-xl bg-primary flex items-center justify-center hover:bg-primary/85 transition-colors">
                 <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-4 text-primary-foreground" />
               </Link>
             </div>
@@ -107,13 +111,13 @@ export default function BalanceCard() {
             <div className="bg-white/[0.06] backdrop-blur-sm rounded-2xl px-4 py-3 flex-1 min-w-[140px]">
               <p className="text-[11px] text-white/40 font-medium mb-1">Income</p>
               <p className="text-sm md:text-lg font-display font-bold text-primary">
-                {visible ? `+${formatCurrency(income)}` : formatHiddenAmount()}
+                {visible ? `+${formatCurrency(income)}` : HIDDEN_AMOUNT}
               </p>
             </div>
             <div className="bg-white/[0.06] backdrop-blur-sm rounded-2xl px-4 py-3 flex-1 min-w-[140px]">
               <p className="text-[11px] text-white/40 font-medium mb-1">Expenses</p>
               <p className="text-sm md:text-lg font-display font-bold text-red-400">
-                {visible ? `-${formatCurrency(expense)}` : formatHiddenAmount()}
+                {visible ? `-${formatCurrency(expense)}` : HIDDEN_AMOUNT}
               </p>
             </div>
           </div>

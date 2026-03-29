@@ -1,11 +1,32 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { SparklesIcon } from "@hugeicons/core-free-icons";
+import { useChatStore } from "@/store/chatStore";
 
 export default function AITipCard() {
+  const { insights, fetchInsights } = useChatStore();
+  const [tipIndex] = useState(() => Math.floor(Math.random() * 100));
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchInsights().catch(() => {
+      if (!cancelled) setFailed(true);
+    });
+    return () => { cancelled = true; };
+  }, [fetchInsights]);
+
+  const tip =
+    insights.length > 0
+      ? insights[tipIndex % insights.length]
+      : failed
+        ? "Track your spending to get personalized tips from your AI coach."
+        : "Loading your personalized financial tip...";
+
   return (
     <Card className="border-l-4 border-l-primary bg-gradient-to-r from-primary/[0.06] to-transparent dark:from-primary/[0.04]">
       <CardContent className="space-y-3">
@@ -16,8 +37,7 @@ export default function AITipCard() {
           <h3 className="text-sm font-display font-semibold">AI Tip of the Day</h3>
         </div>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          You&apos;ve spent 35% of your income on food this month. Consider meal
-          prepping on weekends to cut food costs by up to 40%.
+          {tip}
         </p>
         <Link
           href="/ai"

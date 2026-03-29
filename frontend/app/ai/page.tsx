@@ -42,7 +42,7 @@ export default function AIPage() {
   return (
     <AppShell>
       <Header title="AI Coach" />
-      <div className="p-4 md:p-6 flex flex-col h-[calc(100vh-4rem-6rem)] md:h-[calc(100vh-4rem)]">
+      <div className="p-4 md:p-6 flex flex-col h-[calc(100dvh-4rem-6rem)] md:h-[calc(100dvh-4rem)]">
         {/* Chat header */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -153,6 +153,7 @@ export default function AIPage() {
             className="border-0 bg-transparent focus-visible:ring-0 focus-visible:border-0 h-10"
           />
           <button
+            aria-label="Send message"
             onClick={handleSend}
             disabled={isLoading || !input.trim()}
             className="size-10 rounded-xl bg-primary flex items-center justify-center shrink-0 hover:bg-primary/85 transition-colors disabled:opacity-50"

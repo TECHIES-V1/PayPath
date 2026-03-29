@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useTransactionStore } from "@/store/transactionStore";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,10 @@ export default function AddTransactionDialog({
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
   const [note, setNote] = useState("");
+
+  useEffect(() => {
+    if (open) setType(defaultType);
+  }, [open, defaultType]);
 
   const resetForm = () => {
     setAmount("");
@@ -100,6 +104,7 @@ export default function AddTransactionDialog({
               <button
                 key={t}
                 type="button"
+                aria-pressed={type === t}
                 onClick={() => {
                   setType(t);
                   setCategory("");
@@ -143,6 +148,7 @@ export default function AddTransactionDialog({
                 <button
                   key={cat}
                   type="button"
+                  aria-pressed={category === cat}
                   onClick={() => setCategory(cat)}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                     category === cat

@@ -29,6 +29,7 @@ interface GoalState {
   updateGoal: (id: string, data: Partial<Goal>) => Promise<void>;
   deleteGoal: (id: string) => Promise<void>;
   addFunds: (id: string, amount: number) => Promise<void>;
+  reset: () => void;
 }
 
 export const useGoalStore = create<GoalState>((set) => ({
@@ -57,86 +58,96 @@ export const useGoalStore = create<GoalState>((set) => ({
   },
 
   addGoal: async (data) => {
-    try {
-      const res = await apiPost<{ goal: ApiGoal }>("/goals", {
-        name: data.name,
-        targetAmount: data.targetAmount,
-        deadline: new Date(data.deadline).toISOString(),
-      });
-      const goal: Goal = {
-        id: res.goal.id,
-        name: res.goal.name,
-        targetAmount: Number(res.goal.targetAmount),
-        currentAmount: Number(res.goal.currentAmount),
-        deadline: res.goal.deadline?.split("T")[0] || res.goal.deadline,
-        progress: 0,
-        isComplete: false,
-      };
-      set((state) => ({ goals: [goal, ...state.goals] }));
-    } catch (error) {
-      throw error;
-    }
+    const res = await apiPost<{ goal: ApiGoal }>("/goals", {
+      name: data.name,
+      targetAmount: data.targetAmount,
+      deadline: new Date(data.deadline).toISOString(),
+    });
+    const goal: Goal = {
+      id: res.goal.id,
+      name: res.goal.name,
+      targetAmount: Number(res.goal.targetAmount),
+      currentAmount: Number(res.goal.currentAmount),
+      deadline: res.goal.deadline?.split("T")[0] || res.goal.deadline,
+      progress: 0,
+      isComplete: false,
+    };
+    set((state) => ({ goals: [goal, ...state.goals] }));
   },
 
   updateGoal: async (id, data) => {
+    const payload = {
+      ...(data.name !== undefined && { name: data.name }),
+      ...(data.targetAmount !== undefined && { targetAmount: data.targetAmount }),
+      ...(data.deadline !== undefined && { deadline: new Date(data.deadline).toISOString() }),
+    };
+
+    const res = await apiPut<{ goal: ApiGoal }>(`/goals/${id}`, payload);
+    const goal: Goal = {
+      id: res.goal.id,
+      name: res.goal.name,
+      targetAmount: Number(res.goal.targetAmount),
+      currentAmount: Number(res.goal.currentAmount),
+      deadline: res.goal.deadline?.split("T")[0] || res.goal.deadline,
+      progress: res.goal.progress || 0,
+      isComplete: Number(res.goal.currentAmount) >= Number(res.goal.targetAmount),
+    };
+
+    set((state) => ({
+      goals: state.goals.map((g) => (g.id === id ? goal : g)),
+    }));
+  },
+
+  deleteGoal: async (id) => {
     try {
-      const payload = {
-        ...(data.name !== undefined && { name: data.name }),
-        ...(data.targetAmount !== undefined && { targetAmount: data.targetAmount }),
-        ...(data.deadline !== undefined && { deadline: new Date(data.deadline).toISOString() }),
-      };
-
-      const res = await apiPut<{ goal: ApiGoal }>(`/goals/${id}`, payload);
-      const goal: Goal = {
-        id: res.goal.id,
-        name: res.goal.name,
-        targetAmount: Number(res.goal.targetAmount),
-        currentAmount: Number(res.goal.currentAmount),
-        deadline: res.goal.deadline?.split("T")[0] || res.goal.deadline,
-        progress: res.goal.progress || 0,
-        isComplete: Number(res.goal.currentAmount) >= Number(res.goal.targetAmount),
-      };
-
+      await apiDelete(`/goals/${id}`);
       set((state) => ({
-        goals: state.goals.map((g) => (g.id === id ? goal : g)),
+        goals: state.goals.filter((g) => g.id !== id),
       }));
     } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to delete goal";
+      set({ error: message });
       throw error;
     }
   },
 
-  deleteGoal: async (id) => {
-    await apiDelete(`/goals/${id}`);
-    set((state) => ({
-      goals: state.goals.filter((g) => g.id !== id),
-    }));
+  addFunds: async (id, amount) => {
+    try {
+      const res = await apiPost<{ goal: ApiGoal }>(`/goals/${id}/contribute`, { amount });
+      let goalCompleted = false;
+      let goalName = "";
+      set((state) => {
+        const updated = state.goals.map((g) =>
+          g.id === id
+            ? {
+                ...g,
+                currentAmount: Number(res.goal.currentAmount),
+                progress: res.goal.progress || 0,
+                isComplete: Number(res.goal.currentAmount) >= Number(res.goal.targetAmount),
+              }
+            : g
+        );
+        const goal = updated.find((g) => g.id === id);
+        if (goal && goal.currentAmount >= goal.targetAmount) {
+          goalCompleted = true;
+          goalName = goal.name;
+        }
+        return { goals: updated };
+      });
+      if (goalCompleted) {
+        const { addNotification } = await import("@/store/notificationStore").then((m) => m.useNotificationStore.getState());
+        addNotification({
+          title: "Goal reached!",
+          message: `You've completed your "${goalName}" goal`,
+          type: "success",
+        });
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to add funds";
+      set({ error: message });
+      throw error;
+    }
   },
 
-  addFunds: async (id, amount) => {
-  const res = await apiPost<{ goal: ApiGoal }>(`/goals/${id}/contribute`, { amount });
-    set((state) => {
-      const updated = state.goals.map((g) =>
-        g.id === id
-          ? {
-              ...g,
-              currentAmount: Number(res.goal.currentAmount),
-              progress: res.goal.progress || 0,
-              isComplete: Number(res.goal.currentAmount) >= Number(res.goal.targetAmount),
-            }
-          : g
-      );
-      // Notify if goal completed
-      const goal = updated.find((g) => g.id === id);
-      if (goal && goal.currentAmount >= goal.targetAmount) {
-        import("@/store/notificationStore").then((m) =>
-          m.useNotificationStore.getState().addNotification({
-            title: "Goal reached! 🎉",
-            message: `You've completed your "${goal.name}" goal`,
-            type: "success",
-          })
-        );
-      }
-      return { goals: updated };
-    });
-  },
+  reset: () => set({ goals: [], isLoading: false, error: null }),
 }));

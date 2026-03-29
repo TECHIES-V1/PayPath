@@ -31,12 +31,13 @@ export default function EditGoalDialog({ goal, open, onOpenChange }: EditGoalDia
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!goal) return;
+    if (!goal || !open) return;
 
     setName(goal.name);
     setTarget(formatDecimalInput(String(goal.targetAmount)));
     setDeadline(goal.deadline);
-  }, [goal]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [goal?.id, open]);
 
   const resetState = () => {
     setName("");

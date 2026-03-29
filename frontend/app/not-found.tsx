@@ -12,7 +12,7 @@ export default function NotFound() {
           </p>
         </div>
         <Link
-          href="/dashboard"
+          href="/"
           className="inline-flex items-center justify-center h-12 px-6 rounded-xl bg-primary text-primary-foreground text-base font-semibold hover:bg-primary/85 transition-colors"
         >
           Go Home

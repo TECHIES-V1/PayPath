@@ -19,10 +19,9 @@ export default function NotificationsPage() {
   const { notifications, markAllRead, clearAll } = useNotificationStore();
 
   useEffect(() => {
-    if (notifications.some((notification) => !notification.read)) {
-      markAllRead();
-    }
-  }, [markAllRead, notifications]);
+    markAllRead();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <AppShell>

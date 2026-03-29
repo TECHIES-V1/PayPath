@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import AppShell from "@/components/layout/AppShell";
 import Header from "@/components/layout/Header";
@@ -8,7 +8,12 @@ import BalanceCard from "@/components/dashboard/BalanceCard";
 import AITipCard from "@/components/dashboard/AITipCard";
 import RecentTransactions from "@/components/dashboard/RecentTransactions";
 import GoalsSummary from "@/components/dashboard/GoalsSummary";
-import SpendingChart from "@/components/dashboard/SpendingChart";
+import dynamic from "next/dynamic";
+
+const SpendingChart = dynamic(() => import("@/components/dashboard/SpendingChart"), {
+  ssr: false,
+  loading: () => <div className="h-64 rounded-2xl skeleton" />,
+});
 import { useAuthStore } from "@/store/authStore";
 import { useTransactionStore } from "@/store/transactionStore";
 import { useGoalStore } from "@/store/goalStore";
@@ -31,16 +36,19 @@ export default function DashboardPage() {
   const { fetchTransactions } = useTransactionStore();
   const { fetchGoals } = useGoalStore();
 
+  const [today, setToday] = useState("");
+
   useEffect(() => {
     fetchTransactions();
     fetchGoals();
+    setToday(
+      new Date().toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+      })
+    );
   }, [fetchTransactions, fetchGoals]);
-
-  const today = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  });
 
   return (
     <AppShell>

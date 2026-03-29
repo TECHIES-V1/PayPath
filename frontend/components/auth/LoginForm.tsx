@@ -44,6 +44,7 @@ export default function LoginForm() {
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
+              role="alert"
               className="rounded-xl bg-destructive/10 p-3.5 text-sm text-destructive"
             >
               {error}
@@ -64,6 +65,7 @@ export default function LoginForm() {
               <Input
                 id="email"
                 type="email"
+                autoComplete="email"
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -80,6 +82,7 @@ export default function LoginForm() {
               <Input
                 id="password"
                 type="password"
+                autoComplete="current-password"
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

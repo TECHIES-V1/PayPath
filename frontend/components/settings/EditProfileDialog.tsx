@@ -70,7 +70,7 @@ export default function EditProfileDialog({ open, onOpenChange }: EditProfileDia
           <DialogTitle className="font-display text-lg font-bold">Edit Profile</DialogTitle>
           <DialogDescription>Update your personal information</DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-2">
+        <form onSubmit={(e) => { e.preventDefault(); void handleSave(); }} className="space-y-4 py-2">
           <div className="flex items-center gap-4">
             <Avatar className="size-16 rounded-2xl">
               <AvatarImage src={user?.avatarUrl || ""} alt={name || "User"} />
@@ -109,13 +109,13 @@ export default function EditProfileDialog({ open, onOpenChange }: EditProfileDia
               disabled
             />
           </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" disabled={saving} onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button disabled={saving} onClick={() => void handleSave()}>{saving ? "Saving..." : "Save changes"}</Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button type="button" variant="outline" disabled={saving} onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={saving}>{saving ? "Saving..." : "Save changes"}</Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "motion/react";
@@ -10,6 +10,18 @@ import { useAuthStore } from "@/store/authStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.06, delayChildren: 0.15 },
+  },
+};
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+};
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -45,7 +57,7 @@ export default function RegisterForm() {
   const displayError = localError || error;
 
   // Password strength
-  const getStrength = () => {
+  const strength = useMemo(() => {
     if (!password) return 0;
     let s = 0;
     if (password.length >= 6) s++;
@@ -53,22 +65,9 @@ export default function RegisterForm() {
     if (/[A-Z]/.test(password) && /[0-9]/.test(password)) s++;
     if (/[^A-Za-z0-9]/.test(password)) s++;
     return s;
-  };
-  const strength = getStrength();
+  }, [password]);
   const strengthColors = ["bg-destructive", "bg-orange-400", "bg-yellow-400", "bg-primary"];
   const strengthLabels = ["Weak", "Fair", "Good", "Strong"];
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: { staggerChildren: 0.06, delayChildren: 0.15 }
-    }
-  };
-  const itemVariants = {
-    hidden: { opacity: 0, y: 10 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.3 } }
-  };
 
   return (
     <motion.div
@@ -93,6 +92,7 @@ export default function RegisterForm() {
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
+                role="alert"
                 className="rounded-xl bg-destructive/10 p-3.5 text-sm text-destructive"
               >
                 {displayError}
@@ -113,6 +113,7 @@ export default function RegisterForm() {
                 <Input
                   id="name"
                   type="text"
+                  autoComplete="name"
                   placeholder="John Doe"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -129,6 +130,7 @@ export default function RegisterForm() {
                 <Input
                   id="email"
                   type="email"
+                  autoComplete="email"
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -145,6 +147,7 @@ export default function RegisterForm() {
                 <Input
                   id="password"
                   type="password"
+                  autoComplete="new-password"
                   placeholder="At least 6 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -177,6 +180,7 @@ export default function RegisterForm() {
                 <Input
                   id="confirmPassword"
                   type="password"
+                  autoComplete="new-password"
                   placeholder="Re-enter your password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}

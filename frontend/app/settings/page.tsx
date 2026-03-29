@@ -207,6 +207,9 @@ function ToggleRow({
         <p className="text-xs text-muted-foreground">{description}</p>
       </div>
       <button
+        role="switch"
+        aria-checked={checked}
+        aria-label={label}
         onClick={() => onChange(!checked)}
         className={`relative w-10 h-6 rounded-full transition-colors cursor-pointer ${
           checked ? "bg-primary" : "bg-muted"

@@ -12,7 +12,6 @@
     "@hugeicons/core-free-icons": "^4.0.0",
     "@hugeicons/react": "^1.1.6",
     "@react-three/fiber": "^9.5.0",
-    "@types/three": "^0.183.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "motion": "^12.38.0",
@@ -21,7 +20,6 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "recharts": "^3.8.1",
-    "shadcn": "^4.0.8",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
     "three": "^0.167.1",
@@ -36,6 +34,8 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.7",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "@types/three": "^0.183.1",
+    "shadcn": "^4.0.8"
   }
 }

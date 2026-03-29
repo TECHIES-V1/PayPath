@@ -13,9 +13,12 @@ interface ChatState {
   insights: string[];
   sendMessage: (text: string) => Promise<void>;
   fetchInsights: () => Promise<void>;
+  reset: () => void;
 }
 
-export const useChatStore = create<ChatState>((set, get) => ({
+let chatAbortController: AbortController | null = null;
+
+export const useChatStore = create<ChatState>((set) => ({
   messages: [
     {
       id: "welcome",
@@ -28,6 +31,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
   insights: [],
 
   sendMessage: async (text) => {
+    chatAbortController?.abort();
+    chatAbortController = new AbortController();
+    const signal = chatAbortController.signal;
+
     const userMsg: ChatMessage = {
       id: `user-${Date.now()}`,
       role: "user",
@@ -39,7 +46,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }));
 
     try {
-      const data = await apiPost<{ response: string }>("/ai/chat", { message: text });
+      const data = await apiPost<{ response: string }>("/ai/chat", { message: text }, { signal });
+      if (signal.aborted) return;
       const aiMsg: ChatMessage = {
         id: `ai-${Date.now()}`,
         role: "ai",
@@ -50,6 +58,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         isLoading: false,
       }));
     } catch {
+      if (signal.aborted) return;
       const errorMsg: ChatMessage = {
         id: `ai-err-${Date.now()}`,
         role: "ai",
@@ -63,11 +72,21 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   fetchInsights: async () => {
-    try {
-      const data = await apiGet<{ insights: string[] }>("/ai/insights");
-      set({ insights: data.insights });
-    } catch {
-      // silently fail
-    }
+    const data = await apiGet<{ insights: string[] }>("/ai/insights");
+    set({ insights: data.insights });
   },
+
+  reset: () =>
+    set({
+      messages: [
+        {
+          id: "welcome",
+          role: "ai",
+          content:
+            "Hi! I'm your personal financial coach. Ask me anything about budgeting, saving, or investing. I'll analyze your spending patterns and help you make smarter money decisions.",
+        },
+      ],
+      isLoading: false,
+      insights: [],
+    }),
 }));

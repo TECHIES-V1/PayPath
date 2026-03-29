@@ -59,6 +59,7 @@ export default function RecentTransactions() {
         <CardAction>
           <Link
             href="/transactions"
+            aria-label="View all transactions"
             className="size-8 rounded-xl bg-primary flex items-center justify-center hover:bg-primary/85 transition-colors"
           >
             <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-4 text-primary-foreground" />
@@ -87,7 +88,7 @@ export default function RecentTransactions() {
             return (
               <div
                 key={tx.id}
-                className="flex items-center gap-3 py-2.5 px-2 -mx-2 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer"
+                className="flex items-center gap-3 py-2.5 px-2 -mx-2 rounded-xl hover:bg-muted/50 transition-colors"
               >
                 <div className={`size-10 rounded-xl ${config.bg} flex items-center justify-center shrink-0`}>
                   <HugeiconsIcon icon={config.icon} className={`size-[18px] ${config.color}`} />

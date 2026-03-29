@@ -115,7 +115,9 @@ export const useGoalStore = create<GoalState>((set) => ({
     try {
       const res = await apiPost<{ goal: ApiGoal }>(`/goals/${id}/contribute`, { amount });
       let goalCompleted = false;
+      let goalId = "";
       let goalName = "";
+
       set((state) => {
         const updated = state.goals.map((g) =>
           g.id === id
@@ -130,14 +132,17 @@ export const useGoalStore = create<GoalState>((set) => ({
         const goal = updated.find((g) => g.id === id);
         if (goal && goal.currentAmount >= goal.targetAmount) {
           goalCompleted = true;
+          goalId = goal.id;
           goalName = goal.name;
         }
         return { goals: updated };
       });
+
       if (goalCompleted) {
         const { addNotification } = await import("@/store/notificationStore").then((m) => m.useNotificationStore.getState());
         addNotification({
-          title: "Goal reached!",
+          id: `goal-complete-${goalId}`,
+          title: "Goal reached! 🎉",
           message: `You've completed your "${goalName}" goal`,
           type: "success",
         });

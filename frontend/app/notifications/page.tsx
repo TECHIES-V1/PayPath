@@ -7,13 +7,23 @@ import { useNotificationStore } from "@/store/notificationStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Notification01Icon, Tick01Icon, Delete01Icon } from "@hugeicons/core-free-icons";
+import { Notification01Icon, Delete01Icon } from "@hugeicons/core-free-icons";
 
 const typeStyles = {
   success: "bg-primary/10 text-primary",
   warning: "bg-yellow-400/10 text-yellow-400",
   info: "bg-blue-400/10 text-blue-400",
 };
+
+function formatAmount(amount?: number) {
+  if (amount === undefined) return null;
+
+  return new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN",
+    minimumFractionDigits: 0,
+  }).format(amount);
+}
 
 export default function NotificationsPage() {
   const { notifications, markAllRead, clearAll } = useNotificationStore();
@@ -34,14 +44,6 @@ export default function NotificationsPage() {
               {notifications.length === 0 ? "No notifications yet." : `${notifications.length} notification${notifications.length === 1 ? "" : "s"}`}
             </p>
           </div>
-          {notifications.length > 0 && (
-            <div className="flex w-full sm:w-auto">
-              <Button size="sm" variant="outline" className="w-full sm:w-auto" onClick={markAllRead}>
-                <HugeiconsIcon icon={Tick01Icon} className="size-3.5" />
-                Mark all read
-              </Button>
-            </div>
-          )}
         </div>
 
         {notifications.length === 0 ? (
@@ -63,10 +65,17 @@ export default function NotificationsPage() {
                     <div className={`mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl ${typeStyles[notification.type]}`}>
                       <HugeiconsIcon icon={Notification01Icon} className="size-4" />
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                    <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
                         <span className="break-words">{notification.title}</span>
-                        <span className="shrink-0 text-xs font-normal text-muted-foreground">
+                      </div>
+                      <div className="shrink-0 text-right">
+                        {notification.amount !== undefined && (
+                          <p className="text-sm font-semibold text-foreground">
+                            {formatAmount(notification.amount)}
+                          </p>
+                        )}
+                        <span className="text-xs font-normal text-muted-foreground">
                           {new Date(notification.createdAt).toLocaleString("en-US", {
                             month: "short",
                             day: "numeric",

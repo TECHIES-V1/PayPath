@@ -40,7 +40,6 @@ export default function SettingsPage() {
     const storedValue = localStorage.getItem("paypath_email_notifications");
     return storedValue === null ? false : storedValue === "true";
   });
-
   const [logoutConfirm, setLogoutConfirm] = useState(false);
 
   const memberSince = user?.createdAt
@@ -61,14 +60,13 @@ export default function SettingsPage() {
   return (
     <AppShell>
       <Header title="Settings" />
-      <div className="p-4 md:p-6 max-w-2xl mx-auto">
+      <div className="mx-auto max-w-2xl p-4 md:p-6">
         <motion.div
           variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } }}
           initial="hidden"
           animate="show"
           className="space-y-4"
         >
-          {/* Profile */}
           <motion.div variants={fadeUp}>
             <Card>
               <CardHeader>
@@ -76,16 +74,16 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-4">
-                <Avatar className="size-16 rounded-2xl" size="lg">
-                  <AvatarImage src={user?.avatarUrl || ""} alt={user?.name || "User"} />
-                  <AvatarFallback className="rounded-2xl bg-primary/15 text-primary text-xl font-display font-bold">
-                    {user?.name?.charAt(0)?.toUpperCase() || "U"}
-                  </AvatarFallback>
-                </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-display font-bold text-lg truncate">{user?.name || "User"}</h3>
-                    <p className="text-sm text-muted-foreground truncate">{user?.email || ""}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">Member since {memberSince}</p>
+                  <Avatar className="size-16 rounded-2xl" size="lg">
+                    <AvatarImage src={user?.avatarUrl || ""} alt={user?.name || "User"} />
+                    <AvatarFallback className="rounded-2xl bg-primary/15 text-primary text-xl font-display font-bold">
+                      {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="truncate text-lg font-display font-bold">{user?.name || "User"}</h3>
+                    <p className="truncate text-sm text-muted-foreground">{user?.email || ""}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">Member since {memberSince}</p>
                   </div>
                   <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
                     <HugeiconsIcon icon={Edit01Icon} className="size-3.5" />
@@ -96,7 +94,6 @@ export default function SettingsPage() {
             </Card>
           </motion.div>
 
-          {/* Notifications */}
           <motion.div variants={fadeUp}>
             <Card>
               <CardHeader>
@@ -113,16 +110,17 @@ export default function SettingsPage() {
                 <Separator />
                 <ToggleRow
                   icon={Mail01Icon}
-                  label="Email alerts"
+                  label="Weekly email alerts"
                   description="Weekly spending summaries"
                   checked={emailNotif}
                   onChange={setEmailNotif}
+                  disabled
+                  badge="Coming Soon"
                 />
               </CardContent>
             </Card>
           </motion.div>
 
-          {/* About */}
           <motion.div variants={fadeUp}>
             <Card>
               <CardHeader>
@@ -136,14 +134,11 @@ export default function SettingsPage() {
                     <p className="text-xs text-muted-foreground">Version 1.0.0</p>
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground pl-7">
-                  Made with love for the PayPath Hackathon
-                </p>
+                <p className="pl-7 text-xs text-muted-foreground">Made with love for the PayPath Hackathon</p>
               </CardContent>
             </Card>
           </motion.div>
 
-          {/* Danger zone */}
           <motion.div variants={fadeUp}>
             <Card>
               <CardHeader>
@@ -192,28 +187,41 @@ function ToggleRow({
   description,
   checked,
   onChange,
+  disabled = false,
+  badge,
 }: {
   icon: typeof Notification01Icon;
   label: string;
   description: string;
   checked: boolean;
   onChange: (v: boolean) => void;
+  disabled?: boolean;
+  badge?: string;
 }) {
   return (
     <div className="flex items-center gap-3">
-      <HugeiconsIcon icon={icon} className="size-4 text-muted-foreground shrink-0" />
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium">{label}</p>
+      <HugeiconsIcon icon={icon} className="size-4 shrink-0 text-muted-foreground" />
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-sm font-medium">{label}</p>
+          {badge && (
+            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+              {badge}
+            </span>
+          )}
+        </div>
         <p className="text-xs text-muted-foreground">{description}</p>
       </div>
       <button
+        type="button"
         role="switch"
         aria-checked={checked}
         aria-label={label}
-        onClick={() => onChange(!checked)}
-        className={`relative w-10 h-6 rounded-full transition-colors cursor-pointer ${
+        onClick={() => !disabled && onChange(!checked)}
+        disabled={disabled}
+        className={`relative h-6 w-10 cursor-pointer rounded-full transition-colors ${
           checked ? "bg-primary" : "bg-muted"
-        }`}
+        } ${disabled ? "cursor-not-allowed opacity-50" : ""}`}
       >
         <div
           className={`absolute top-1 size-4 rounded-full bg-white transition-transform ${

@@ -25,6 +25,9 @@ interface PassportData {
   incomeConsistency: number;
   hasCompletedGoal: boolean;
   completedGoalsCount: number;
+  goalsCount: number;
+  transactionCount: number;
+  hasIncomeAndExpense: boolean;
 }
 
 interface BreakdownFactor {
@@ -70,13 +73,16 @@ export default function PassportPage() {
   const tier = passport?.tier ?? "Starter";
   const earnedBadges = passport?.badges ?? [];
   const hasCompletedGoal = passport?.hasCompletedGoal ?? false;
+  const goalsCount = passport?.goalsCount ?? 0;
+  const transactionCount = passport?.transactionCount ?? 0;
+  const hasIncomeAndExpense = passport?.hasIncomeAndExpense ?? false;
   const circumference = 2 * Math.PI * 78;
   const dashOffset = circumference * (1 - score / 100);
 
   const checklist = [
-    { label: "Set a savings goal", done: earnedBadges.length > 0 || score > 0 },
-    { label: "Log 10 transactions", done: earnedBadges.includes("Logger") },
-    { label: "Chat with AI Coach", done: score > 20 },
+    { label: "Set a savings goal", done: goalsCount >= 1 },
+    { label: "Log 10 transactions", done: transactionCount >= 10 },
+    { label: "Add both income and expense", done: hasIncomeAndExpense },
     { label: "Maintain a budget for 30 days", done: earnedBadges.includes("Streak Master") },
     { label: "Reach your first goal", done: hasCompletedGoal },
   ];

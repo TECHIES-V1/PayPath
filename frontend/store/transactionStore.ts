@@ -57,17 +57,19 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
       }));
       set({ transactions, isLoading: false });
 
-      // Fire notifications for large expenses (>50k) — only for new ones
       const newLargeExpenses = transactions.filter(
         (t) => t.type === "expense" && t.amount >= 50000 && !notifiedTransactionIds.has(t.id)
       );
+
       if (newLargeExpenses.length > 0) {
         const { addNotification } = await import("@/store/notificationStore").then((m) => m.useNotificationStore.getState());
         newLargeExpenses.slice(0, 3).forEach((t) => {
           notifiedTransactionIds.add(t.id);
           addNotification({
+            id: `large-expense-${t.id}`,
             title: "Large expense detected",
             message: `₦${t.amount.toLocaleString()} on ${t.category}`,
+            amount: t.amount,
             type: "warning",
           });
         });
@@ -79,39 +81,57 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
   },
 
   addTransaction: async (data) => {
-    const res = await apiPost<{ transaction: ApiTransaction }>("/transactions", {
-      amount: data.amount,
-      type: data.type,
-      category: data.category,
-      date: data.date ? new Date(data.date).toISOString() : undefined,
-      notes: data.notes,
-    });
-    const tx: Transaction = {
-      id: res.transaction.id,
-      category: res.transaction.category,
-      amount: Number(res.transaction.amount),
-      type: res.transaction.type as "income" | "expense",
-      date: res.transaction.date?.split("T")[0] || res.transaction.date,
-      notes: res.transaction.notes ?? undefined,
-    };
-    set((state) => ({ transactions: [tx, ...state.transactions] }));
-
-    const { addNotification } = await import("@/store/notificationStore").then((m) => m.useNotificationStore.getState());
-
-    if (tx.type === "expense" && tx.amount >= 50000) {
-      addNotification({
-        title: "Large expense detected",
-        message: `₦${tx.amount.toLocaleString()} on ${tx.category}`,
-        type: "warning",
+    try {
+      const res = await apiPost<{ transaction: ApiTransaction }>("/transactions", {
+        amount: data.amount,
+        type: data.type,
+        category: data.category,
+        date: data.date ? new Date(data.date).toISOString() : undefined,
+        notes: data.notes,
       });
-    }
+      const tx: Transaction = {
+        id: res.transaction.id,
+        category: res.transaction.category,
+        amount: Number(res.transaction.amount),
+        type: res.transaction.type as "income" | "expense",
+        date: res.transaction.date?.split("T")[0] || res.transaction.date,
+        notes: res.transaction.notes ?? undefined,
+      };
+      set((state) => ({ transactions: [tx, ...state.transactions] }));
 
-    if (tx.type === "income") {
-      addNotification({
-        title: "Income recorded",
-        message: `+₦${tx.amount.toLocaleString()} from ${tx.category}`,
-        type: "success",
-      });
+      const { addNotification } = await import("@/store/notificationStore").then((m) => m.useNotificationStore.getState());
+
+      if (tx.type === "expense" && tx.amount >= 50000) {
+        addNotification({
+          id: `large-expense-${tx.id}`,
+          title: "Large expense detected",
+          message: `₦${tx.amount.toLocaleString()} on ${tx.category}`,
+          amount: tx.amount,
+          type: "warning",
+        });
+      }
+
+      if (tx.type === "income") {
+        addNotification({
+          id: `income-${tx.id}`,
+          title: "Income recorded",
+          message: `+₦${tx.amount.toLocaleString()} from ${tx.category}`,
+          amount: tx.amount,
+          type: "success",
+        });
+      }
+
+      if (tx.type === "expense") {
+        addNotification({
+          id: `expense-${tx.id}`,
+          title: "Expense recorded",
+          message: `₦${tx.amount.toLocaleString()} on ${tx.category}`,
+          amount: tx.amount,
+          type: "info",
+        });
+      }
+    } catch (error) {
+      throw error;
     }
   },
 

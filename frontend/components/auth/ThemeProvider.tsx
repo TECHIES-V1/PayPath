@@ -3,16 +3,13 @@
 import { useEffect } from "react";
 import { Toaster } from "sonner";
 import { useThemeStore } from "@/store/themeStore";
-import { useNotificationStore } from "@/store/notificationStore";
 
 export function ThemeProvider() {
   const initTheme = useThemeStore((s) => s.initTheme);
-  const hydrateNotifications = useNotificationStore((s) => s.hydrate);
 
   useEffect(() => {
     initTheme();
-    hydrateNotifications();
-  }, [hydrateNotifications, initTheme]);
+  }, [initTheme]);
 
   const theme = useThemeStore((s) => s.theme);
 

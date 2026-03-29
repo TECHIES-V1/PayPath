@@ -59,6 +59,7 @@ export default function GoalsPage() {
   const [editGoal, setEditGoal] = useState<Goal | null>(null);
   const [contributeGoal, setContributeGoal] = useState<Goal | null>(null);
   const [deleteGoalTarget, setDeleteGoalTarget] = useState<Goal | null>(null);
+  const [filter, setFilter] = useState<"all" | "active" | "done">("all");
 
   useEffect(() => {
     fetchGoals();
@@ -74,20 +75,43 @@ export default function GoalsPage() {
     }
   };
 
+  const filteredGoals = goals.filter((goal) => {
+    const percentage = goal.progress ?? Math.round((goal.currentAmount / goal.targetAmount) * 100);
+    const isComplete = percentage >= 100;
+
+    if (filter === "done") return isComplete;
+    if (filter === "active") return !isComplete;
+    return true;
+  });
+
   return (
     <AppShell>
       <Header title="Savings Goals" />
       <div className="p-4 md:p-6 space-y-5">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-sm md:text-lg font-display font-bold">Your Goals</h2>
-            <p className="text-xs md:text-sm text-muted-foreground">{goals.length} active goal{goals.length !== 1 ? "s" : ""}</p>
-          </div>
+          <h2 className="text-sm md:text-lg font-display font-bold">Your Goals</h2>
           <Button size="sm" onClick={() => setAddOpen(true)}>
             <HugeiconsIcon icon={Add01Icon} className="size-3.5" />
             New Goal
           </Button>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          {(["all", "active", "done"] as const).map((value) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setFilter(value)}
+              className={`rounded-xl px-4 py-2 text-sm font-semibold capitalize transition-colors ${
+                filter === value
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted/50 text-muted-foreground hover:bg-muted"
+              }`}
+            >
+              {value}
+            </button>
+          ))}
         </div>
 
         {error && (
@@ -147,10 +171,23 @@ export default function GoalsPage() {
               Create a Goal
             </Button>
           </motion.div>
+        ) : filteredGoals.length === 0 ? (
+          <Card>
+            <CardContent className="py-10 text-center">
+              <p className="font-medium">
+                {filter === "done" ? "No completed goals yet" : "No active goals right now"}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {filter === "done"
+                  ? "Completed goals will appear here."
+                  : "Ongoing and overdue goals will appear here."}
+              </p>
+            </CardContent>
+          </Card>
         ) : (
           /* Goal cards */
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-            {goals.map((goal, i) => {
+            {filteredGoals.map((goal, i) => {
               const percentage = goal.progress ?? Math.round((goal.currentAmount / goal.targetAmount) * 100);
               const isComplete = percentage >= 100;
               const isOverdue = isGoalOverdue(goal);
@@ -208,9 +245,11 @@ export default function GoalsPage() {
                               </span>
                             </div>
                           </div>
-                          <p className={`text-xs ${isOverdue ? "font-medium text-destructive" : "text-muted-foreground"}`}>
-                            {daysUntil(goal.deadline)}
-                          </p>
+                          {!isComplete && (
+                            <p className={`text-xs ${isOverdue ? "font-medium text-destructive" : "text-muted-foreground"}`}>
+                              {daysUntil(goal.deadline)}
+                            </p>
+                          )}
                         </div>
                       </div>
 

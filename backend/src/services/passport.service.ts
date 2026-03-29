@@ -42,6 +42,8 @@ export const calculateScore = async (userId: string) => {
   }
   const savingsStreak = Math.min(30, daysWithSavings.size)
   const completedGoals = goals.filter((goal) => Number(goal.currentAmount) >= Number(goal.targetAmount))
+  const hasIncomeTransaction = transactions.some((tx) => tx.type === 'income')
+  const hasExpenseTransaction = transactions.some((tx) => tx.type === 'expense')
 
   // Budget adherence: income > expense ratio (max 100%)
   let totalIncome = 0
@@ -100,6 +102,9 @@ export const calculateScore = async (userId: string) => {
     incomeConsistency,
     completedGoalsCount: completedGoals.length,
     hasCompletedGoal: completedGoals.length > 0,
+    goalsCount: goals.length,
+    transactionCount: transactions.length,
+    hasIncomeAndExpense: hasIncomeTransaction && hasExpenseTransaction,
   }
 }
 

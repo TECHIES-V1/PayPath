@@ -62,16 +62,13 @@ export default function NotificationsPage() {
               <Card key={notification.id} className={!notification.read ? "border-primary/20 bg-primary/[0.03]" : undefined}>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-start gap-3 text-base">
-                    <div className={`mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl ${typeStyles[notification.type]}`}>
-                      <HugeiconsIcon icon={Notification01Icon} className="size-4" />
-                    </div>
                     <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
-                        <span className="break-words">{notification.title}</span>
+                        <span className="text-[10px] md:text-sm font-medium text-foreground">{notification.title}</span>
                       </div>
                       <div className="shrink-0 text-right">
                         {notification.amount !== undefined && (
-                          <p className="text-sm font-semibold text-foreground">
+                          <p className="text-[10px] md:text-sm font-semibold text-foreground">
                             {formatAmount(notification.amount)}
                           </p>
                         )}
@@ -88,7 +85,7 @@ export default function NotificationsPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground">{notification.message}</p>
+                  <p className="text-center text-[10px] md:text-sm text-muted-foreground">{notification.message}</p>
                 </CardContent>
               </Card>
             ))}

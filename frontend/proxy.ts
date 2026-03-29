@@ -12,7 +12,7 @@ const protectedRoutes = [
 ];
 const authRoutes = ["/login", "/register"];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const hasSession =
     request.cookies.get("paypath_has_session")?.value === "1";
   const { pathname } = request.nextUrl;

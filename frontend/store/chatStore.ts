@@ -72,12 +72,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   fetchInsights: async () => {
-    try {
-      const data = await apiGet<{ insights: string[] }>("/ai/insights");
-      set({ insights: data.insights });
-    } catch {
-      // silently fail
-    }
+    const data = await apiGet<{ insights: string[] }>("/ai/insights");
+    set({ insights: data.insights });
   },
 
   reset: () =>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useTransactionStore } from "@/store/transactionStore";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,10 @@ export default function AddTransactionDialog({
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
   const [note, setNote] = useState("");
+
+  useEffect(() => {
+    if (open) setType(defaultType);
+  }, [open, defaultType]);
 
   const resetForm = () => {
     setAmount("");

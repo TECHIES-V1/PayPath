@@ -10,15 +10,22 @@ import { useChatStore } from "@/store/chatStore";
 export default function AITipCard() {
   const { insights, fetchInsights } = useChatStore();
   const [tipIndex] = useState(() => Math.floor(Math.random() * 100));
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    fetchInsights();
+    let cancelled = false;
+    fetchInsights().catch(() => {
+      if (!cancelled) setFailed(true);
+    });
+    return () => { cancelled = true; };
   }, [fetchInsights]);
 
   const tip =
     insights.length > 0
       ? insights[tipIndex % insights.length]
-      : "Loading your personalized financial tip...";
+      : failed
+        ? "Track your spending to get personalized tips from your AI coach."
+        : "Loading your personalized financial tip...";
 
   return (
     <Card className="border-l-4 border-l-primary bg-gradient-to-r from-primary/[0.06] to-transparent dark:from-primary/[0.04]">

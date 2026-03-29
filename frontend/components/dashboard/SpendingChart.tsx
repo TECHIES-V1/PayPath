@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import type { TooltipProps } from "recharts";
 import {
   AreaChart,
   Area,
@@ -17,6 +18,20 @@ function formatShort(amount: number) {
   if (amount >= 1_000_000) return `₦${(amount / 1_000_000).toFixed(1)}M`;
   if (amount >= 1_000) return `₦${(amount / 1_000).toFixed(0)}K`;
   return `₦${amount}`;
+}
+
+function CustomTooltip({ active, payload, label }: TooltipProps<number, string>) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-card border border-border rounded-xl px-3 py-2 text-xs shadow-lg">
+      <p className="font-semibold mb-1">{label}</p>
+      {payload.map((p) => (
+        <p key={p.name} style={{ color: p.color }}>
+          {p.name === "income" ? "Income" : "Expenses"}: {formatShort(p.value ?? 0)}
+        </p>
+      ))}
+    </div>
+  );
 }
 
 export default function SpendingChart() {
@@ -48,20 +63,6 @@ export default function SpendingChart() {
 
     return months;
   }, [transactions]);
-
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (!active || !payload?.length) return null;
-    return (
-      <div className="bg-card border border-border rounded-xl px-3 py-2 text-xs shadow-lg">
-        <p className="font-semibold mb-1">{label}</p>
-        {payload.map((p: any) => (
-          <p key={p.name} style={{ color: p.color }}>
-            {p.name === "income" ? "Income" : "Expenses"}: {formatShort(p.value)}
-          </p>
-        ))}
-      </div>
-    );
-  };
 
   return (
     <Card>

@@ -14,10 +14,12 @@ export function ThemeProvider() {
     hydrateNotifications();
   }, [hydrateNotifications, initTheme]);
 
+  const theme = useThemeStore((s) => s.theme);
+
   return (
     <Toaster
       position="top-right"
-      theme="dark"
+      theme={theme}
       richColors
       toastOptions={{
         className: "font-body",

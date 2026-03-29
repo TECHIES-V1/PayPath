@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import AppShell from "@/components/layout/AppShell";
 import Header from "@/components/layout/Header";
@@ -31,16 +31,19 @@ export default function DashboardPage() {
   const { fetchTransactions } = useTransactionStore();
   const { fetchGoals } = useGoalStore();
 
+  const [today, setToday] = useState("");
+
   useEffect(() => {
     fetchTransactions();
     fetchGoals();
+    setToday(
+      new Date().toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+      })
+    );
   }, [fetchTransactions, fetchGoals]);
-
-  const today = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  });
 
   return (
     <AppShell>

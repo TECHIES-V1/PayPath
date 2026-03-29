@@ -52,7 +52,9 @@ export default function GoalsSummary() {
             <p className="text-sm text-muted-foreground text-center py-4">No goals yet</p>
           ) : (
             goals.map((goal) => {
-              const percentage = Math.round((goal.currentAmount / goal.targetAmount) * 100);
+              const percentage = goal.targetAmount > 0
+                ? Math.round((goal.currentAmount / goal.targetAmount) * 100)
+                : 0;
               return (
                 <div key={goal.id} className="bg-muted/30 dark:bg-white/[0.04] rounded-xl p-3.5 space-y-2.5">
                   <div className="flex items-center gap-2.5">

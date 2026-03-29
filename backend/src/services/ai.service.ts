@@ -11,6 +11,34 @@ Your job is to:
 
 Keep responses concise (2-4 paragraphs max). Use bullet points for lists. Be specific with numbers when you have the user's data.`
 
+async function callGroq(messages: Array<{ role: string; content: string }>, maxTokens = 500): Promise<string | null> {
+  if (!process.env.GROQ_API_KEY) return null
+
+  try {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_tokens: maxTokens,
+        messages,
+      }),
+    })
+
+    const data = await response.json() as any
+    if (data.choices && data.choices[0]?.message?.content) {
+      return data.choices[0].message.content
+    }
+  } catch (error) {
+    console.error('Groq API error:', error)
+  }
+
+  return null
+}
+
 export const chat = async (userId: string, message: string) => {
   const context = await buildFinancialContext(userId)
 
@@ -25,31 +53,13 @@ User Financial Context:
 - Transactions this month: ${context.transactionCount}
 `
 
-  // If ANTHROPIC_API_KEY is available, use Claude API
-  if (process.env.ANTHROPIC_API_KEY) {
-    try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': process.env.ANTHROPIC_API_KEY,
-          'anthropic-version': '2023-06-01',
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 500,
-          system: SYSTEM_PROMPT + contextPrompt,
-          messages: [{ role: 'user', content: message }],
-        }),
-      })
+  const aiResponse = await callGroq([
+    { role: 'system', content: SYSTEM_PROMPT + contextPrompt },
+    { role: 'user', content: message },
+  ])
 
-      const data = await response.json() as any
-      if (data.content && data.content[0]) {
-        return { response: data.content[0].text, context }
-      }
-    } catch (error) {
-      console.error('Claude API error:', error)
-    }
+  if (aiResponse) {
+    return { response: aiResponse, context }
   }
 
   // Fallback: smart rule-based responses when no API key
@@ -87,6 +97,37 @@ export const getInsights = async (userId: string) => {
 
   if (insights.length === 0) {
     insights.push("You're on track! Keep logging your transactions and contributing to your goals.")
+  }
+
+  // Try AI-enhanced insights
+  const contextPrompt = `
+User Financial Context:
+- Monthly Income: ₦${context.monthlyIncome.toLocaleString()}
+- Monthly Expenses: ₦${context.monthlyExpense.toLocaleString()}
+- Balance: ₦${context.balance.toLocaleString()}
+- Top spending categories: ${context.topCategories.map(c => `${c.category}: ₦${c.amount.toLocaleString()}`).join(', ') || 'No data yet'}
+- Active goals: ${context.goals.map(g => `${g.name} (${g.progress}% of ₦${g.target.toLocaleString()})`).join(', ') || 'None set'}
+- Transactions this month: ${context.transactionCount}
+
+Rule-based observations: ${insights.join(' | ')}
+`
+
+  const aiResponse = await callGroq([
+    {
+      role: 'system',
+      content: 'You are a Nigerian personal finance advisor. Given the user\'s financial data and some observations, generate exactly 3 short, actionable financial tips. Use Nigerian Naira (₦). Return each tip on its own line, no numbering or bullet points. Be specific with numbers when possible.',
+    },
+    { role: 'user', content: contextPrompt },
+  ], 300)
+
+  if (aiResponse) {
+    const aiInsights = aiResponse
+      .split('\n')
+      .map((line: string) => line.trim())
+      .filter((line: string) => line.length > 0)
+    if (aiInsights.length > 0) {
+      return { insights: aiInsights, context }
+    }
   }
 
   return { insights, context }

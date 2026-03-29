@@ -29,6 +29,7 @@ interface GoalState {
   updateGoal: (id: string, data: Partial<Goal>) => Promise<void>;
   deleteGoal: (id: string) => Promise<void>;
   addFunds: (id: string, amount: number) => Promise<void>;
+  reset: () => void;
 }
 
 export const useGoalStore = create<GoalState>((set) => ({
@@ -106,37 +107,55 @@ export const useGoalStore = create<GoalState>((set) => ({
   },
 
   deleteGoal: async (id) => {
-    await apiDelete(`/goals/${id}`);
-    set((state) => ({
-      goals: state.goals.filter((g) => g.id !== id),
-    }));
+    try {
+      await apiDelete(`/goals/${id}`);
+      set((state) => ({
+        goals: state.goals.filter((g) => g.id !== id),
+      }));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to delete goal";
+      set({ error: message });
+      throw error;
+    }
   },
 
   addFunds: async (id, amount) => {
-  const res = await apiPost<{ goal: ApiGoal }>(`/goals/${id}/contribute`, { amount });
-    set((state) => {
-      const updated = state.goals.map((g) =>
-        g.id === id
-          ? {
-              ...g,
-              currentAmount: Number(res.goal.currentAmount),
-              progress: res.goal.progress || 0,
-              isComplete: Number(res.goal.currentAmount) >= Number(res.goal.targetAmount),
-            }
-          : g
-      );
-      // Notify if goal completed
-      const goal = updated.find((g) => g.id === id);
-      if (goal && goal.currentAmount >= goal.targetAmount) {
-        import("@/store/notificationStore").then((m) =>
-          m.useNotificationStore.getState().addNotification({
-            title: "Goal reached! 🎉",
-            message: `You've completed your "${goal.name}" goal`,
-            type: "success",
-          })
+    try {
+      const res = await apiPost<{ goal: ApiGoal }>(`/goals/${id}/contribute`, { amount });
+      let goalCompleted = false;
+      let goalName = "";
+      set((state) => {
+        const updated = state.goals.map((g) =>
+          g.id === id
+            ? {
+                ...g,
+                currentAmount: Number(res.goal.currentAmount),
+                progress: res.goal.progress || 0,
+                isComplete: Number(res.goal.currentAmount) >= Number(res.goal.targetAmount),
+              }
+            : g
         );
+        const goal = updated.find((g) => g.id === id);
+        if (goal && goal.currentAmount >= goal.targetAmount) {
+          goalCompleted = true;
+          goalName = goal.name;
+        }
+        return { goals: updated };
+      });
+      if (goalCompleted) {
+        const { addNotification } = await import("@/store/notificationStore").then((m) => m.useNotificationStore.getState());
+        addNotification({
+          title: "Goal reached!",
+          message: `You've completed your "${goalName}" goal`,
+          type: "success",
+        });
       }
-      return { goals: updated };
-    });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to add funds";
+      set({ error: message });
+      throw error;
+    }
   },
+
+  reset: () => set({ goals: [], isLoading: false, error: null }),
 }));

@@ -1,5 +1,9 @@
 import { create } from "zustand";
 import { apiPost, apiGet, apiPut, setToken, getToken } from "@/lib/api";
+import { useTransactionStore } from "@/store/transactionStore";
+import { useGoalStore } from "@/store/goalStore";
+import { useChatStore } from "@/store/chatStore";
+import { useNotificationStore } from "@/store/notificationStore";
 
 interface User {
   id: string;
@@ -63,6 +67,10 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: () => {
     setToken(null);
+    useTransactionStore.getState().reset();
+    useGoalStore.getState().reset();
+    useChatStore.getState().reset();
+    useNotificationStore.getState().reset();
     set({ user: null, isAuthenticated: false, error: null });
   },
 
@@ -77,14 +85,22 @@ export const useAuthStore = create<AuthState>((set) => ({
       const data = await apiGet<{ user: User }>("/auth/me");
       set({ user: data.user, isAuthenticated: true, isLoading: false });
     } catch {
-      setToken(null);
-      set({ user: null, isAuthenticated: false, isLoading: false });
+      // 401 is already handled by api.ts (clears token + redirects).
+      // For other errors (network), keep the token but stop loading.
+      set({ isLoading: false });
     }
   },
 
   updateUser: async (data) => {
-    const res = await apiPut<{ user: User }>("/auth/profile", data);
-    set({ user: res.user });
+    set({ isLoading: true, error: null });
+    try {
+      const res = await apiPut<{ user: User }>("/auth/profile", data);
+      set({ user: res.user, isLoading: false });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to update profile";
+      set({ error: message, isLoading: false });
+      throw error;
+    }
   },
 
   clearError: () => set({ error: null }),

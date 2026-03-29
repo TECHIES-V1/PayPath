@@ -30,7 +30,10 @@ interface TransactionState {
   deleteTransaction: (id: string) => Promise<void>;
   getFiltered: () => Transaction[];
   getTotals: () => { balance: number; income: number; expense: number };
+  reset: () => void;
 }
+
+const notifiedTransactionIds = new Set<string>();
 
 export const useTransactionStore = create<TransactionState>((set, get) => ({
   transactions: [],
@@ -54,18 +57,21 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
       }));
       set({ transactions, isLoading: false });
 
-      // Fire notifications for large expenses (>50k)
-      const { addNotification } = await import("@/store/notificationStore").then((m) => m.useNotificationStore.getState());
-      transactions
-        .filter((t) => t.type === "expense" && t.amount >= 50000)
-        .slice(0, 3)
-        .forEach((t) =>
+      // Fire notifications for large expenses (>50k) — only for new ones
+      const newLargeExpenses = transactions.filter(
+        (t) => t.type === "expense" && t.amount >= 50000 && !notifiedTransactionIds.has(t.id)
+      );
+      if (newLargeExpenses.length > 0) {
+        const { addNotification } = await import("@/store/notificationStore").then((m) => m.useNotificationStore.getState());
+        newLargeExpenses.slice(0, 3).forEach((t) => {
+          notifiedTransactionIds.add(t.id);
           addNotification({
             title: "Large expense detected",
             message: `₦${t.amount.toLocaleString()} on ${t.category}`,
             type: "warning",
-          })
-        );
+          });
+        });
+      }
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Failed to load transactions";
       set({ isLoading: false, error: message });
@@ -114,10 +120,16 @@ addTransaction: async (data) => {
 },
 
   deleteTransaction: async (id) => {
-    await apiDelete(`/transactions/${id}`);
-    set((state) => ({
-      transactions: state.transactions.filter((t) => t.id !== id),
-    }));
+    try {
+      await apiDelete(`/transactions/${id}`);
+      set((state) => ({
+        transactions: state.transactions.filter((t) => t.id !== id),
+      }));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to delete transaction";
+      set({ error: message });
+      throw error;
+    }
   },
 
   getFiltered: () => {
@@ -131,5 +143,10 @@ addTransaction: async (data) => {
     const income = transactions.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
     const expense = transactions.filter((t) => t.type === "expense").reduce((s, t) => s + t.amount, 0);
     return { balance: income - expense, income, expense };
+  },
+
+  reset: () => {
+    notifiedTransactionIds.clear();
+    set({ transactions: [], isLoading: false, error: null, filter: "all" });
   },
 }));

@@ -16,10 +16,12 @@ interface NotificationState {
   markAllRead: () => void;
   clearAll: () => void;
   unreadCount: () => number;
+  reset: () => void;
 }
 
 const NOTIFICATIONS_KEY = "paypath_notifications";
 const PUSH_NOTIFICATIONS_KEY = "paypath_push_notifications";
+const MAX_NOTIFICATIONS = 50;
 
 function saveNotifications(notifications: AppNotification[]) {
   if (typeof window === "undefined") return;
@@ -65,7 +67,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       const notifications = [
         { ...n, id: crypto.randomUUID(), read: false, createdAt: new Date() },
         ...state.notifications,
-      ];
+      ].slice(0, MAX_NOTIFICATIONS);
       saveNotifications(notifications);
       return { notifications };
     });
@@ -84,4 +86,11 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   },
 
   unreadCount: () => get().notifications.filter((n) => !n.read).length,
+
+  reset: () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(NOTIFICATIONS_KEY);
+    }
+    set({ notifications: [] });
+  },
 }));

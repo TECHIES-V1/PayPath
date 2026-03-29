@@ -64,7 +64,7 @@ export default function NotificationsPage() {
                   <CardTitle className="flex items-start gap-3 text-base">
                     <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] md:text-sm font-medium text-foreground">{notification.title}</span>
+                        <span className="text-sm font-medium text-foreground">{notification.title}</span>
                       </div>
                       <div className="shrink-0 text-right">
                         {notification.amount !== undefined && (

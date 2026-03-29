@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { motion } from "motion/react";
+import { getToken } from "@/lib/api";
 
 const Antigravity = dynamic(() => import("@/components/ui/antigravity"), { ssr: false });
 
@@ -11,8 +12,9 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
+    const target = getToken() ? "/dashboard" : "/login";
     const timer = setTimeout(() => {
-      router.push("/login");
+      router.push(target);
     }, 2000);
     return () => clearTimeout(timer);
   }, [router]);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import type { TooltipProps } from "recharts";
+import type { TooltipContentProps } from "recharts";
 import {
   AreaChart,
   Area,
@@ -20,14 +20,14 @@ function formatShort(amount: number) {
   return `₦${amount}`;
 }
 
-function CustomTooltip({ active, payload, label }: TooltipProps<number, string>) {
+function CustomTooltip({ active, payload, label }: TooltipContentProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-card border border-border rounded-xl px-3 py-2 text-xs shadow-lg">
       <p className="font-semibold mb-1">{label}</p>
       {payload.map((p) => (
         <p key={p.name} style={{ color: p.color }}>
-          {p.name === "income" ? "Income" : "Expenses"}: {formatShort(p.value ?? 0)}
+          {p.name === "income" ? "Income" : "Expenses"}: {formatShort(Number(p.value ?? 0))}
         </p>
       ))}
     </div>
@@ -88,7 +88,7 @@ export default function SpendingChart() {
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
               <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }} axisLine={false} tickLine={false} />
               <YAxis tickFormatter={formatShort} tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }} axisLine={false} tickLine={false} />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip content={CustomTooltip} />
               <Area type="monotone" dataKey="income" stroke="var(--color-primary)" strokeWidth={2} fill="url(#incomeGrad)" dot={false} />
               <Area type="monotone" dataKey="expense" stroke="#f87171" strokeWidth={2} fill="url(#expenseGrad)" dot={false} />
             </AreaChart>

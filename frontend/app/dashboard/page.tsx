@@ -8,7 +8,12 @@ import BalanceCard from "@/components/dashboard/BalanceCard";
 import AITipCard from "@/components/dashboard/AITipCard";
 import RecentTransactions from "@/components/dashboard/RecentTransactions";
 import GoalsSummary from "@/components/dashboard/GoalsSummary";
-import SpendingChart from "@/components/dashboard/SpendingChart";
+import dynamic from "next/dynamic";
+
+const SpendingChart = dynamic(() => import("@/components/dashboard/SpendingChart"), {
+  ssr: false,
+  loading: () => <div className="h-64 rounded-2xl skeleton" />,
+});
 import { useAuthStore } from "@/store/authStore";
 import { useTransactionStore } from "@/store/transactionStore";
 import { useGoalStore } from "@/store/goalStore";

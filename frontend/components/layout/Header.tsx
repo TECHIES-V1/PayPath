@@ -26,6 +26,7 @@ export default function Header({ title }: HeaderProps) {
         <div className="flex items-center gap-3">
           <Link
             href="/notifications"
+            aria-label={`Notifications${count > 0 ? ` (${count} unread)` : ""}`}
             className="relative size-9 rounded-xl bg-muted/50 flex items-center justify-center hover:bg-muted transition-colors"
           >
               <HugeiconsIcon icon={Notification01Icon} className="size-[18px] text-muted-foreground" />

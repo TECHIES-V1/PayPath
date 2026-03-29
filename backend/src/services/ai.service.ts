@@ -26,6 +26,7 @@ async function callGroq(messages: Array<{ role: string; content: string }>, maxT
         max_tokens: maxTokens,
         messages,
       }),
+      signal: AbortSignal.timeout(15000),
     })
 
     const data = await response.json() as any

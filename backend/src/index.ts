@@ -14,7 +14,7 @@ import { generalLimiter, authLimiter } from './middlewares/rateLimit.middleware'
 dotenv.config();
 
 // Validate required env vars
-const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET'];
+const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET', 'CLIENT_URL'];
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
     console.error(`Missing required environment variable: ${envVar}`);
@@ -28,7 +28,7 @@ const PORT = process.env.PORT || 5000;
 // Security & parsing middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  origin: process.env.CLIENT_URL!,
   credentials: true,
 }));
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));

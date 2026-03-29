@@ -21,9 +21,7 @@ function formatCurrency(amount: number) {
   }).format(amount);
 }
 
-function formatHiddenAmount() {
-  return "****";
-}
+const HIDDEN_AMOUNT = "******";
 
 function useCountUp(target: number, duration = 800) {
   const [value, setValue] = useState(target);
@@ -113,13 +111,13 @@ export default function BalanceCard() {
             <div className="bg-white/[0.06] backdrop-blur-sm rounded-2xl px-4 py-3 flex-1 min-w-[140px]">
               <p className="text-[11px] text-white/40 font-medium mb-1">Income</p>
               <p className="text-sm md:text-lg font-display font-bold text-primary">
-                {visible ? `+${formatCurrency(income)}` : formatHiddenAmount()}
+                {visible ? `+${formatCurrency(income)}` : HIDDEN_AMOUNT}
               </p>
             </div>
             <div className="bg-white/[0.06] backdrop-blur-sm rounded-2xl px-4 py-3 flex-1 min-w-[140px]">
               <p className="text-[11px] text-white/40 font-medium mb-1">Expenses</p>
               <p className="text-sm md:text-lg font-display font-bold text-red-400">
-                {visible ? `-${formatCurrency(expense)}` : formatHiddenAmount()}
+                {visible ? `-${formatCurrency(expense)}` : HIDDEN_AMOUNT}
               </p>
             </div>
           </div>

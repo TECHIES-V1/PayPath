@@ -32,7 +32,7 @@ export default function Sidebar() {
 
   return (
     <>
-      <aside className="hidden border-r border-sidebar-border bg-sidebar md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col">
+      <aside aria-label="Main navigation" className="hidden border-r border-sidebar-border bg-sidebar md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col">
         <div className="flex min-h-0 flex-1 flex-col">
           <div className="flex h-16 items-center gap-2.5 border-b border-sidebar-border px-6">
             <div className="flex size-8 items-center justify-center rounded-xl bg-primary">

@@ -25,7 +25,7 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl shadow-[0_-2px_10px_oklch(0_0_0/0.05)] dark:shadow-none dark:border-t dark:border-white/[0.06] md:hidden">
+    <nav aria-label="Main navigation" className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl shadow-[0_-2px_10px_oklch(0_0_0/0.05)] dark:shadow-none dark:border-t dark:border-white/[0.06] md:hidden">
       <div className="flex items-center justify-around h-[68px] px-2">
         {navItems.map((item) => {
           const isActive = item.href === "/dashboard"

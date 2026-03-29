@@ -81,8 +81,8 @@ export default function SpendingChart() {
                   <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f87171" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#f87171" stopOpacity={0} />
+                  <stop offset="5%" stopColor="var(--color-destructive)" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="var(--color-destructive)" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
@@ -90,7 +90,7 @@ export default function SpendingChart() {
               <YAxis tickFormatter={formatShort} tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }} axisLine={false} tickLine={false} />
               <Tooltip content={CustomTooltip} />
               <Area type="monotone" dataKey="income" stroke="var(--color-primary)" strokeWidth={2} fill="url(#incomeGrad)" dot={false} />
-              <Area type="monotone" dataKey="expense" stroke="#f87171" strokeWidth={2} fill="url(#expenseGrad)" dot={false} />
+              <Area type="monotone" dataKey="expense" stroke="var(--color-destructive)" strokeWidth={2} fill="url(#expenseGrad)" dot={false} />
             </AreaChart>
           </ResponsiveContainer>
         )}

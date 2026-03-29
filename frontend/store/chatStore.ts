@@ -18,7 +18,7 @@ interface ChatState {
 
 let chatAbortController: AbortController | null = null;
 
-export const useChatStore = create<ChatState>((set, get) => ({
+export const useChatStore = create<ChatState>((set) => ({
   messages: [
     {
       id: "welcome",
@@ -57,7 +57,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         messages: [...state.messages, aiMsg],
         isLoading: false,
       }));
-    } catch (error) {
+    } catch {
       if (signal.aborted) return;
       const errorMsg: ChatMessage = {
         id: `ai-err-${Date.now()}`,

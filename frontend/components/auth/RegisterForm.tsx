@@ -92,6 +92,7 @@ export default function RegisterForm() {
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
+                role="alert"
                 className="rounded-xl bg-destructive/10 p-3.5 text-sm text-destructive"
               >
                 {displayError}
@@ -112,6 +113,7 @@ export default function RegisterForm() {
                 <Input
                   id="name"
                   type="text"
+                  autoComplete="name"
                   placeholder="John Doe"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -128,6 +130,7 @@ export default function RegisterForm() {
                 <Input
                   id="email"
                   type="email"
+                  autoComplete="email"
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -144,6 +147,7 @@ export default function RegisterForm() {
                 <Input
                   id="password"
                   type="password"
+                  autoComplete="new-password"
                   placeholder="At least 6 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -176,6 +180,7 @@ export default function RegisterForm() {
                 <Input
                   id="confirmPassword"
                   type="password"
+                  autoComplete="new-password"
                   placeholder="Re-enter your password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}

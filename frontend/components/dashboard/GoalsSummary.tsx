@@ -30,6 +30,7 @@ export default function GoalsSummary() {
           <CardAction>
             <Link
               href="/goals"
+              aria-label="View all goals"
               className="size-8 rounded-xl bg-primary flex items-center justify-center hover:bg-primary/85 transition-colors"
             >
               <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-4 text-primary-foreground" />

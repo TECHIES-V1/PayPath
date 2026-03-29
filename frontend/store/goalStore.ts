@@ -58,52 +58,44 @@ export const useGoalStore = create<GoalState>((set) => ({
   },
 
   addGoal: async (data) => {
-    try {
-      const res = await apiPost<{ goal: ApiGoal }>("/goals", {
-        name: data.name,
-        targetAmount: data.targetAmount,
-        deadline: new Date(data.deadline).toISOString(),
-      });
-      const goal: Goal = {
-        id: res.goal.id,
-        name: res.goal.name,
-        targetAmount: Number(res.goal.targetAmount),
-        currentAmount: Number(res.goal.currentAmount),
-        deadline: res.goal.deadline?.split("T")[0] || res.goal.deadline,
-        progress: 0,
-        isComplete: false,
-      };
-      set((state) => ({ goals: [goal, ...state.goals] }));
-    } catch (error) {
-      throw error;
-    }
+    const res = await apiPost<{ goal: ApiGoal }>("/goals", {
+      name: data.name,
+      targetAmount: data.targetAmount,
+      deadline: new Date(data.deadline).toISOString(),
+    });
+    const goal: Goal = {
+      id: res.goal.id,
+      name: res.goal.name,
+      targetAmount: Number(res.goal.targetAmount),
+      currentAmount: Number(res.goal.currentAmount),
+      deadline: res.goal.deadline?.split("T")[0] || res.goal.deadline,
+      progress: 0,
+      isComplete: false,
+    };
+    set((state) => ({ goals: [goal, ...state.goals] }));
   },
 
   updateGoal: async (id, data) => {
-    try {
-      const payload = {
-        ...(data.name !== undefined && { name: data.name }),
-        ...(data.targetAmount !== undefined && { targetAmount: data.targetAmount }),
-        ...(data.deadline !== undefined && { deadline: new Date(data.deadline).toISOString() }),
-      };
+    const payload = {
+      ...(data.name !== undefined && { name: data.name }),
+      ...(data.targetAmount !== undefined && { targetAmount: data.targetAmount }),
+      ...(data.deadline !== undefined && { deadline: new Date(data.deadline).toISOString() }),
+    };
 
-      const res = await apiPut<{ goal: ApiGoal }>(`/goals/${id}`, payload);
-      const goal: Goal = {
-        id: res.goal.id,
-        name: res.goal.name,
-        targetAmount: Number(res.goal.targetAmount),
-        currentAmount: Number(res.goal.currentAmount),
-        deadline: res.goal.deadline?.split("T")[0] || res.goal.deadline,
-        progress: res.goal.progress || 0,
-        isComplete: Number(res.goal.currentAmount) >= Number(res.goal.targetAmount),
-      };
+    const res = await apiPut<{ goal: ApiGoal }>(`/goals/${id}`, payload);
+    const goal: Goal = {
+      id: res.goal.id,
+      name: res.goal.name,
+      targetAmount: Number(res.goal.targetAmount),
+      currentAmount: Number(res.goal.currentAmount),
+      deadline: res.goal.deadline?.split("T")[0] || res.goal.deadline,
+      progress: res.goal.progress || 0,
+      isComplete: Number(res.goal.currentAmount) >= Number(res.goal.targetAmount),
+    };
 
-      set((state) => ({
-        goals: state.goals.map((g) => (g.id === id ? goal : g)),
-      }));
-    } catch (error) {
-      throw error;
-    }
+    set((state) => ({
+      goals: state.goals.map((g) => (g.id === id ? goal : g)),
+    }));
   },
 
   deleteGoal: async (id) => {

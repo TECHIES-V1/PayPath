@@ -104,6 +104,7 @@ export default function AddTransactionDialog({
               <button
                 key={t}
                 type="button"
+                aria-pressed={type === t}
                 onClick={() => {
                   setType(t);
                   setCategory("");
@@ -147,6 +148,7 @@ export default function AddTransactionDialog({
                 <button
                   key={cat}
                   type="button"
+                  aria-pressed={category === cat}
                   onClick={() => setCategory(cat)}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                     category === cat

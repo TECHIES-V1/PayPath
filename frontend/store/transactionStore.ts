@@ -78,8 +78,7 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
     }
   },
 
-addTransaction: async (data) => {
-  try {
+  addTransaction: async (data) => {
     const res = await apiPost<{ transaction: ApiTransaction }>("/transactions", {
       amount: data.amount,
       type: data.type,
@@ -114,10 +113,7 @@ addTransaction: async (data) => {
         type: "success",
       });
     }
-  } catch (error) {
-    throw error;
-  }
-},
+  },
 
   deleteTransaction: async (id) => {
     try {

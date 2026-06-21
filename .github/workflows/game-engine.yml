@@ -1,0 +1,96 @@
+name: Contributor Game Engine
+
+on:
+  pull_request:
+    types: [opened, reopened, closed]
+  issues:
+    types: [closed]
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  contents: write
+
+jobs:
+  update-score:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update Scores
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
+          PR_MERGED: ${{ github.event.pull_request.merged }}
+        run: |
+          set -euo pipefail
+          FILE="scores.json"
+
+          if [ ! -f "$FILE" ]; then
+            echo "{}" > "$FILE"
+          fi
+
+          USER="${{ github.actor }}"
+          EVENT="${EVENT_NAME}"
+          ACTION="${EVENT_ACTION:-}"
+          POINTS=0
+
+          if [ "$EVENT" = "pull_request" ]; then
+            if [ "$ACTION" = "opened" ] || [ "$ACTION" = "reopened" ]; then
+              POINTS=5
+            elif [ "$ACTION" = "closed" ] && [ "${PR_MERGED}" = "true" ]; then
+              POINTS=20
+            fi
+          elif [ "$EVENT" = "issues" ] && [ "$ACTION" = "closed" ]; then
+            POINTS=10
+          elif [ "$EVENT" = "pull_request_review" ] && [ "$ACTION" = "submitted" ]; then
+            POINTS=3
+          fi
+
+          if [ "$POINTS" -gt 0 ]; then
+            jq --arg user "$USER" --argjson pts "$POINTS" '
+              .[$user] = (.[$user] // 0) + $pts
+            ' "$FILE" > tmp.json
+            mv tmp.json "$FILE"
+          else
+            echo "No points assigned for event $EVENT/$ACTION"
+          fi
+
+          cat "$FILE"
+
+      - name: Commit Scores
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add scores.json
+          git commit -m "update scores" || echo "no score changes"
+          git push
+
+      - name: Update README leaderboard
+        run: |
+          set -euo pipefail
+          LEADERBOARD=$(jq -r '
+            to_entries
+            | sort_by(-.value)
+            | .[]
+            | "- \(.key): \(.value) pts"
+          ' scores.json)
+
+          if [ -z "$LEADERBOARD" ]; then
+            LEADERBOARD="- No contributions yet."
+          fi
+
+          awk '
+            /<!-- LEADERBOARD_START -->/ {print; print ENVIRON["LB"]; skip=1; next}
+            /<!-- LEADERBOARD_END -->/ {skip=0}
+            !skip
+          ' LB="$LEADERBOARD" README.md > tmp && mv tmp README.md
+
+      - name: Commit README
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add README.md
+          git commit -m "update leaderboard" || echo "no README changes"
+          git push

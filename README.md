@@ -1,112 +1,21 @@
-PayPath — Repository Structure
+# PayPath
+The Official Repo for The Qwest Hackathon
 
+## Frontend
+- Minimal React + Vite project that renders a simple splash page from `src/App.jsx`.
+- Run `npm run dev` for local development or `npm run build` before deploying.
+- Styles live in `src/index.css` to keep the experience intentionally minimal.
 
-```
-paypath/
-├── frontend/
-│   ├── app/
-│   │   ├── (auth)/
-│   │   │   ├── login/
-│   │   │   │   └── page.tsx
-│   │   │   └── register/
-│   │   │       └── page.tsx
-│   │   ├── dashboard/
-│   │   │   └── page.tsx
-│   │   ├── transactions/
-│   │   │   └── page.tsx
-│   │   ├── goals/
-│   │   │   └── page.tsx
-│   │   ├── ai/
-│   │   │   └── page.tsx
-│   │   ├── passport/
-│   │   │   └── page.tsx
-│   │   ├── layout.tsx
-│   │   └── page.tsx
-│   ├── components/
-│   │   ├── ui/
-│   │   │   ├── Button.tsx
-│   │   │   ├── Card.tsx
-│   │   │   ├── Modal.tsx
-│   │   │   ├── Input.tsx
-│   │   │   └── Badge.tsx
-│   │   ├── dashboard/
-│   │   │   ├── BalanceCard.tsx
-│   │   │   ├── SpendingChart.tsx
-│   │   │   └── AITipCard.tsx
-│   │   ├── transactions/
-│   │   │   ├── TransactionList.tsx
-│   │   │   └── TransactionModal.tsx
-│   │   ├── goals/
-│   │   │   ├── GoalCard.tsx
-│   │   │   └── ProgressBar.tsx
-│   │   ├── ai/
-│   │   │   ├── ChatBubble.tsx
-│   │   │   └── AffordabilityWidget.tsx
-│   │   ├── passport/
-│   │   │   ├── PassportCard.tsx
-│   │   │   ├── ScoreBreakdown.tsx
-│   │   │   └── BadgeGrid.tsx
-│   │   └── layout/
-│   │       ├── Sidebar.tsx
-│   │       ├── BottomNav.tsx
-│   │       └── Header.tsx
-│   ├── hooks/
-│   │   ├── useAuth.ts
-│   │   ├── useTransactions.ts
-│   │   ├── useGoals.ts
-│   │   └── usePassport.ts
-│   ├── lib/
-│   │   ├── api.ts
-│   │   └── utils.ts
-│   ├── store/
-│   │   ├── authStore.ts
-│   │   ├── transactionStore.ts
-│   │   └── chatStore.ts
-│   ├── public/
-│   │   └── icons/
-│   ├── .env.local
-│   ├── next.config.ts
-│   ├── tailwind.config.ts
-│   └── package.json
-│
-├── backend/
-│   ├── src/
-│   │   ├── routes/
-│   │   │   ├── auth.routes.ts
-│   │   │   ├── transaction.routes.ts
-│   │   │   ├── goal.routes.ts
-│   │   │   ├── ai.routes.ts
-│   │   │   └── passport.routes.ts
-│   │   ├── controllers/
-│   │   │   ├── auth.controller.ts
-│   │   │   ├── transaction.controller.ts
-│   │   │   ├── goal.controller.ts
-│   │   │   ├── ai.controller.ts
-│   │   │   └── passport.controller.ts
-│   │   ├── middlewares/
-│   │   │   ├── auth.middleware.ts
-│   │   │   ├── rateLimit.middleware.ts
-│   │   │   └── error.middleware.ts
-│   │   ├── services/
-│   │   │   ├── auth.service.ts
-│   │   │   ├── transaction.service.ts
-│   │   │   ├── goal.service.ts
-│   │   │   ├── ai.service.ts
-│   │   │   ├── passport.service.ts
-│   │   │   └── context.service.ts
-│   │   ├── prisma/
-│   │   │   └── schema.prisma
-│   │   └── index.ts
-│   ├── .env.example
-│   └── package.json
-│
-├── .github/
-│   ├── workflows/
-│   │   ├── ci.yml
-│   │   ├── deploy-frontend.yml
-│   │   └── deploy-backend.yml
-│   ├── PULL_REQUEST_TEMPLATE.md
-│   └── ISSUE_TEMPLATE/
-│
-└── README.md
-```
+## 🧠 System Design
+- **Event Tracker:** GitHub workflows capture PR opened, PR merged, issues closed, and reviews submitted events.
+- **Scoring Engine:** Points are mapped as PR opened → +5, PR merged → +20, issue closed → +10, review submitted → +3.
+- **Leaderboard Generator:** Scores persist in `scores.json`, and the workflow rewrites this README (between the leaderboard markers) on every run.
+
+## 🏆 Leaderboard
+<!-- LEADERBOARD_START -->
+Loading...
+<!-- LEADERBOARD_END -->
+
+## Deploying on Vercel
+- The repository contains `vercel.json` so Vercel uses `npm run build` and serves the `dist` output.
+- Link the repo to Vercel, set the root to `/`, and the platform will handle CI/CD automatically.
